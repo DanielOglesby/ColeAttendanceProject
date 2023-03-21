@@ -15,11 +15,20 @@ import android.widget.ImageButton;
 
 public class MainActivity extends AppCompatActivity
 {
+    //Buttons
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
+
+    //Move to bluetooth activity
+    public void configureBluetoothButton(View view)
+    {
+        startActivity(new Intent(MainActivity.this, BluetoothActivity.class));
     }
 
     @Override
@@ -42,18 +51,5 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void configureBluetoothButton()
-    {
-        ImageButton bluetoothButton = (ImageButton) findViewById(R.id.bluetoothButton);
-        bluetoothButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                startActivity(new Intent(MainActivity.this, BluetoothActivity.class));
-            }
-        });
     }
 }
