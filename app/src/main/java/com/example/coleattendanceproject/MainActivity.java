@@ -3,15 +3,11 @@ package com.example.coleattendanceproject;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.ImageButton;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -45,11 +41,16 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        //Menu selection
+        switch(item.getItemId())
+        {
+            case R.id.action_settings:
+            {
+                startActivity(new  Intent(MainActivity.this, SettingsActivity.class));
+                return true;
+            }
         }
 
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 }
