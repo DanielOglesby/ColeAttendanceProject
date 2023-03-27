@@ -17,7 +17,6 @@ public class MainActivity extends AppCompatActivity
 {
     //Buttons
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
