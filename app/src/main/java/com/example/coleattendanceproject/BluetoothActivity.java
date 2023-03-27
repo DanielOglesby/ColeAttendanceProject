@@ -183,6 +183,7 @@ public class BluetoothActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.e(TAG, "Socket's listen() method failed", e);
             }
+            // hello
             serverSocket = tmp;
         }
 
