@@ -8,14 +8,6 @@
     android:gravity="center_horizontal"
     tools:context=".BluetoothActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimaryVariant"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme" />
-
     <TextView
         android:id="@+id/statusBluetoothTv"
         android:layout_width="match_parent"
@@ -31,6 +23,26 @@
         android:layout_height="100dp"
         android:contentDescription="@string/todo" />
 
+    <TextView
+        android:id="@+id/uuid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textColor="#000"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/connectUUID"
+        android:minWidth="300dp"
+        android:minHeight="75dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connect to device"
+        android:layout_marginTop="16dp"
+        style="@style/Base.Widget.AppCompat.Button.Colored"/>
+
     <Button
         android:id="@+id/onBtn"
         android:minWidth="300dp"
@@ -38,6 +50,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/turn_on"
+        android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
     <Button
@@ -47,24 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/turn_off"
-        style="@style/Base.Widget.AppCompat.Button.Colored"/>
-
-    <Button
-        android:id="@+id/discoverableBtn"
-        android:minWidth="300dp"
-        android:minHeight="75dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/discoverable"
-        style="@style/Base.Widget.AppCompat.Button.Colored"/>
-
-    <Button
-        android:id="@+id/pairedBtn"
-        android:minWidth="300dp"
-        android:minHeight="75dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/get_paired_devices"
+        android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
     <Button
@@ -74,6 +70,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Disconnect Bluetooth"
+        android:layout_marginTop="16dp"
+        style="@style/Base.Widget.AppCompat.Button.Colored"/>
+
+    <Button
+        android:id="@+id/setUUID"
+        android:minWidth="300dp"
+        android:minHeight="75dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change UUID"
+        android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
     <TextView

@@ -1,12 +1,14 @@
 package com.example.coleattendanceproject;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -19,20 +21,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 public class BluetoothActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 0;
-    private static final int REQUEST_DISCOVER_BT = 1;
 
     TextView mStatusBlueTv, mPairedTv;
     ImageView mBlueIv;
-    Button mOnBtn, mOffBtn, mDiscoverBtn, mPairedBtn;
+    Button mOnBtn, mOffBtn, mConnectUUID;
 
     BluetoothAdapter mBlueAdapter;
+
+    //Used to connect to desktop attendance app
+    private UUID uuid = UUID.fromString("e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
+
+    private BluetoothDevice mDevice;
+    private BluetoothSocket mSocket;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -45,7 +53,12 @@ public class BluetoothActivity extends AppCompatActivity {
                 // Permission granted
             } else {
                 // Permission denied by user
-                showToast("Permission denied, missing permissions");
+                if(ContextCompat.checkSelfPermission(BluetoothActivity.this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    showToast("Permission denied, missing nearby scan permission.");
+                }
+                else {
+                    showToast("Permission denied, missing permissions");
+                }
                 finish();
             }
         }
@@ -62,8 +75,7 @@ public class BluetoothActivity extends AppCompatActivity {
         mBlueIv       = findViewById(R.id.bluetoothIv);
         mOnBtn        = findViewById(R.id.onBtn);
         mOffBtn       = findViewById(R.id.offBtn);
-        mDiscoverBtn  = findViewById(R.id.discoverableBtn);
-        mPairedBtn    = findViewById(R.id.pairedBtn);
+        mConnectUUID  = findViewById(R.id.connectUUID);
 
         //adapter
         mBlueAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -73,6 +85,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 Manifest.permission.BLUETOOTH_ADVERTISE,
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_ADMIN,
                 Manifest.permission.ACCESS_COARSE_LOCATION
         };
         List<String> permissionsToRequest = new ArrayList<>();
@@ -101,6 +114,21 @@ public class BluetoothActivity extends AppCompatActivity {
             mBlueIv.setImageResource(R.drawable.ic_action_off);
         }
 
+        //on btn connect to device click
+        mConnectUUID.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //UUID taken from (Taken from Teams Attendance App Docx)
+                //TODO: IOException handling and figure out connect/disconnect
+                try {
+                    mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                //mSocket.connect();
+            }
+        });
+
         //on btn click
         mOnBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,17 +144,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
             }
         });
-        //discover bluetooth btn click
-        mDiscoverBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!mBlueAdapter.isDiscovering()) {
-                    showToast("Making Your Device Discoverable");
-                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                    startActivityForResult(intent, REQUEST_DISCOVER_BT);
-                }
-            }
-        });
+
         //off btn click
         mOffBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,27 +159,37 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
             }
         });
-        //get paired devices btn click
-        mPairedBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mBlueAdapter.isEnabled()) {
-                    mPairedTv.setText("Paired Devices");
-                    Set<BluetoothDevice> devices = mBlueAdapter.getBondedDevices();
-                    for (BluetoothDevice device: devices) {
-                        mPairedTv.append("\nDevice" + device.getName()+ "," + device);
-                    }
-                }
-                else {
-                    // bluetooth is off so can't get paired devices
-                    showToast("Turn on bluetooth to get paired devices");
-                }
-            }
-        });
-
-
     }
 
+    //Settings menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //Menu selection
+        switch(item.getItemId())
+        {
+            case R.id.action_settings:
+            {
+                startActivity(new  Intent(BluetoothActivity.this, SettingsActivity.class));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //Helper code for bluetooth permissions
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
