@@ -199,7 +199,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
                 }
             }
-        }
+        } //
 
         // Closes the connect socket and causes the thread to finish.
         public void cancel() {
