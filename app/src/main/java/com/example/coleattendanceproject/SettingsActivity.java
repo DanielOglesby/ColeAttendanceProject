@@ -9,6 +9,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class SettingsActivity extends AppCompatActivity
 {
+    //When back button pressed, finish activity.
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
