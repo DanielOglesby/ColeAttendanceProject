@@ -39,7 +39,8 @@
         android:minHeight="75dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Connect to device"
+        android:text="@string/connect_to_device"
+        android:textColor="@color/black"
         android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
@@ -50,6 +51,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/turn_on"
+        android:textColor="@color/black"
         android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
@@ -59,7 +61,8 @@
         android:minHeight="75dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Disconnect Bluetooth"
+        android:text="@string/disconnect_bluetooth"
+        android:textColor="@color/black"
         android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
@@ -69,7 +72,8 @@
         android:minHeight="75dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change UUID"
+        android:text="@string/change_uuid"
+        android:textColor="@color/black"
         android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 

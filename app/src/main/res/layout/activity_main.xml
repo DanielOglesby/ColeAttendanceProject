@@ -1,34 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/signButton"
-        style="@style/Base.Widget.AppCompat.Button.Colored"
-        android:layout_width="260dp"
+    <ImageButton
+        android:id="@+id/bluetoothButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:background="?attr/colorPrimary"
-        android:text="Sign-in"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="32dp"
+        android:background="#2196F3"
+        android:contentDescription="@string/bluetooth_icon"
+        android:onClick="configureBluetoothButton"
+        android:padding="24dp"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toTopOf="@+id/textNotification"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/stat_sys_data_bluetooth" />
 
     <TextView
-        android:id="@+id/textNotif"
+        android:id="@+id/textNotification"
         style="@style/Theme.ColeAttendanceProject"
-        android:layout_width="255dp"
-        android:layout_height="40dp"
+        android:layout_width="300dp"
+        android:layout_height="48dp"
         android:background="?attr/colorPrimaryVariant"
         android:ems="10"
-        android:text="(Success/Failed)"
+        android:text="@string/defaultMsg"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="20sp"
@@ -41,12 +42,12 @@
     <EditText
         android:id="@+id/editText"
         style="@style/Theme.ColeAttendanceProject"
-        android:layout_width="255dp"
-        android:layout_height="40dp"
+        android:layout_width="300dp"
+        android:layout_height="48dp"
         android:layout_marginBottom="16dp"
         android:background="?attr/colorSecondaryVariant"
         android:ems="10"
-        android:hint="NetID here"
+        android:hint="@string/inputNetID"
         android:textColorHint="@color/white"
         android:inputType="textPersonName"
         android:textAlignment="center"
@@ -56,18 +57,24 @@
         app:layout_constraintBottom_toTopOf="@+id/signButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textNotif" />
+        app:layout_constraintTop_toBottomOf="@+id/textNotification"
+        android:autofillHints="NetID" />
 
-    <ImageButton
-        android:id="@+id/bluetoothButton"
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/signButton"
+        style="@style/Base.Widget.AppCompat.Button.Colored"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:background="#2196F3"
-        android:onClick="configureBluetoothButton"
+        android:layout_marginTop="24dp"
+        android:background="?attr/colorPrimary"
+        android:text="@string/sign_in"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.516"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/stat_sys_data_bluetooth" />
+        app:layout_constraintVertical_bias="0.625" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

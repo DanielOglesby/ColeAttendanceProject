@@ -8,4 +8,13 @@
     <string name="get_paired_devices">Get Paired Devices</string>
     <string name="bluetooth_not_available">Bluetooth is not available</string>
     <string name="bluetooth_available">Bluetooth is available</string>
+    <string name="defaultMsg">(Success/Failed)</string>
+    <string name="inputNetID">NetID here</string>
+    <string name="sign_in">Sign-in</string>
+    <string name="bluetooth_icon">Bluetooth Icon</string>
+    <string name="clear_attendance_sheet">Clear attendance sheet</string>
+    <string name="clear_signed_in_students">Clear signed-in students</string>
+    <string name="connect_to_device">Connect to device</string>
+    <string name="disconnect_bluetooth">Disconnect Bluetooth</string>
+    <string name="change_uuid">Change UUID</string>
 </resources>
