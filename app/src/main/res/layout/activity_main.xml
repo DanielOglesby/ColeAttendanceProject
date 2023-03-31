@@ -48,7 +48,7 @@
         android:background="?attr/colorSecondaryVariant"
         android:ems="10"
         android:hint="@string/inputNetID"
-        android:textColorHint="@color/white"
+        android:textColorHint="@color/black"
         android:inputType="textPersonName"
         android:textAlignment="center"
         android:textColor="@color/white"
