@@ -8,15 +8,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -51,9 +48,7 @@ public class BluetoothActivity extends AppCompatActivity {
     BluetoothAdapter mBlueAdapter;
 
     //Used to connect to desktop attendance app
-    private static final String UUID_KEY = "uuid_key";
-    private UUID myUUID = UUID.fromString("e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
-
+    private UUID myUUID;
     private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
 
@@ -92,17 +87,16 @@ public class BluetoothActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
 
-        // Save the UUID to SharedPreferences
-        SharedPreferences sharedPrefs = getSharedPreferences("my_prefs", Context.MODE_PRIVATE);
         // Get the saved UUID string value from SharedPreferences
-        String uuidString = sharedPrefs.getString("UUID_KEY", null);
+        String uuidString = PreferenceManager.getDefaultSharedPreferences(BluetoothActivity.this).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
         // If a valid UUID string is retrieved, update uuid
-        if (uuidString != null && !uuidString.isEmpty()) {
+        if (!uuidString.isEmpty()) {
             try {
                 myUUID = UUID.fromString(uuidString);
             } catch (IllegalArgumentException e) {
                 // Handle the case where the saved string is not a valid UUID
-                e.printStackTrace();
+                myUUID = UUID.fromString("e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
+                showToast("Invalid UUID input, resetting. . .");
             }
         }
 
@@ -254,9 +248,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         mUUID.setText(myUUID.toString());
 
                         // Save the new UUID to SharedPreferences
-                        SharedPreferences.Editor editor = sharedPrefs.edit();
-                        editor.putString(UUID_KEY, myUUID.toString());
-                        editor.apply();
+                        PreferenceManager.getDefaultSharedPreferences(BluetoothActivity.this).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
                     }
                     catch (IllegalArgumentException e) {
                         showToast("Invalid UUID input");
