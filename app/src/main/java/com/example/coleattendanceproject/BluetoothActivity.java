@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,6 +34,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -165,7 +168,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         }
                     });
 
-            //on btn connect to device click
+            //on btn connect to device(UUID) click
             mConnectUUID.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -187,23 +190,33 @@ public class BluetoothActivity extends AppCompatActivity {
                             String action = intent.getAction();
 
                             if(BluetoothDevice.ACTION_FOUND.equals(action)) {
-                                //Device found
+                                //Bluetooth device found
                                 mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-                                //Connect to device
-                                //UUID taken from (Taken from Teams Attendance App Docx)
-                                //TODO: IOException handling and figure out connect/disconnect
-                                try {
-                                    mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
-                                    mSocket.connect();
-                                    //TODO:Request attendance sheet?
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                                //Check device UUID
+                                if(mDevice.getUuids() != null)
+                                {
+                                    for(ParcelUuid uuid : mDevice.getUuids()) {
+                                        if(uuid.getUuid().equals(myUUID)) {
+                                            //Connect to device
+                                            //UUID taken from (Taken from Teams Attendance App Docx)
+                                            try {
+                                                mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
+                                                mSocket.connect();
+                                                showToast("Connection Successful");
+                                                //requestInformation(); //Not yet working
+                                                //TODO:Request attendance sheet?
+                                            } catch (IOException e) {
+                                                showToast("Failed to connect");
+                                            }
+                                            //Stop discovery
+                                            mBlueAdapter.cancelDiscovery();
+                                            //Unregister receiver
+                                            unregisterReceiver(this);
+                                            break;
+                                        }
+                                    }
                                 }
-                                //Stop discovery
-                                mBlueAdapter.cancelDiscovery();
-                                //Unregister receiver
-                                unregisterReceiver(this);
                             }
                             else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                                 showToast("Device not found");
@@ -287,6 +300,21 @@ public class BluetoothActivity extends AppCompatActivity {
         }
 
         return false;
+    }
+
+    //Helper code for data transmission between desktop and mobile applications
+    public void requestInformation() throws IOException {
+        //Variables
+        InputStream inputStream = mSocket.getInputStream();
+        OutputStream outputStream = mSocket.getOutputStream();
+
+        //Send request for data
+        String message = "req here";
+        outputStream.write(message.getBytes());
+
+        byte[] buffer = new byte[1024];
+        int numBytes = inputStream.read(buffer);
+        String receivedMessage = new String(buffer, 0, numBytes);
     }
 
     //Helper code for bluetooth permissions
