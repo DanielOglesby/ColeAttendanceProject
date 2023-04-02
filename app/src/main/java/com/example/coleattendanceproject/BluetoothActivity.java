@@ -204,7 +204,7 @@ public class BluetoothActivity extends AppCompatActivity {
                                                 mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
                                                 mSocket.connect();
                                                 showToast("Connection Successful");
-                                                //requestInformation(); //Not yet working
+                                                requestInformation();   //Not tested yet
                                                 //TODO:Request attendance sheet?
                                             } catch (IOException e) {
                                                 showToast("Failed to connect");
@@ -217,9 +217,13 @@ public class BluetoothActivity extends AppCompatActivity {
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    showToast("No devices found (1)");
+                                }
                             }
                             else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                                showToast("Device not found");
+                                showToast("No devices found(2)");
                             }
                         }
                     };
