@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -54,6 +55,65 @@ public class BluetoothActivity extends AppCompatActivity {
     private UUID myUUID;
     private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
+
+    //Make a receiver to handle discovery
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+
+            if(BluetoothDevice.ACTION_FOUND.equals(action)) {
+                //Bluetooth device found
+                mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                //Logging found devices for testing
+                Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
+                //Check device UUID
+                if(mDevice.getUuids() != null)
+                {
+                    for(ParcelUuid uuid : mDevice.getUuids()) {
+                        //Logging uuid found from devices
+                        Log.d("BTUUID",uuid.toString());
+
+                        if(uuid.getUuid().equals(myUUID)) {
+                            //Connect to device
+                            //UUID taken from (Taken from Teams Attendance App Docx)
+                            try {
+                                mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
+                                mSocket.connect();
+                                showToast("Connection Successful");
+                                requestInformation();   //Not tested yet
+                                //TODO:Request attendance sheet?
+                            } catch (IOException e) {
+                                showToast("Failed to connect");
+                            }
+                            //Stop discovery
+                            mBlueAdapter.cancelDiscovery();
+                            //Unregister receiver
+                            unregisterReceiver(this);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    showToast("No devices found (1)");
+                }
+            }
+            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                showToast("No devices found(2)");
+            }
+        }
+    };
+
+    //Unregister receiver when done
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -127,6 +187,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         Manifest.permission.BLUETOOTH_CONNECT,
                         Manifest.permission.BLUETOOTH_SCAN,
                         Manifest.permission.BLUETOOTH_ADMIN,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION
                 };
             } else {
@@ -169,69 +230,24 @@ public class BluetoothActivity extends AppCompatActivity {
                     });
 
             //on btn connect to device(UUID) click
-            mConnectUUID.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //Turn on bluetooth if not on
-                    if (!mBlueAdapter.isEnabled()) {
-                        //intent to on bluetooth
-                        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                        activityResultLauncher.launch(intent);
-                    }
-
-                    //Start discovering nearby bluetooth devices
-                    mBlueAdapter.startDiscovery();
-
-                    //Make a receiver to handle discovery
-                    BroadcastReceiver mReceiver = new BroadcastReceiver()
-                    {
-                        @Override
-                        public void onReceive(Context context, Intent intent) {
-                            String action = intent.getAction();
-
-                            if(BluetoothDevice.ACTION_FOUND.equals(action)) {
-                                //Bluetooth device found
-                                mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                                //Check device UUID
-                                if(mDevice.getUuids() != null)
-                                {
-                                    for(ParcelUuid uuid : mDevice.getUuids()) {
-                                        if(uuid.getUuid().equals(myUUID)) {
-                                            //Connect to device
-                                            //UUID taken from (Taken from Teams Attendance App Docx)
-                                            try {
-                                                mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
-                                                mSocket.connect();
-                                                showToast("Connection Successful");
-                                                requestInformation();   //Not tested yet
-                                                //TODO:Request attendance sheet?
-                                            } catch (IOException e) {
-                                                showToast("Failed to connect");
-                                            }
-                                            //Stop discovery
-                                            mBlueAdapter.cancelDiscovery();
-                                            //Unregister receiver
-                                            unregisterReceiver(this);
-                                            break;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    showToast("No devices found (1)");
-                                }
-                            }
-                            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                                showToast("No devices found(2)");
-                            }
-                        }
-                    };
-                    // Register the receiver to receive discovery events
-                    IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                    filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-                    registerReceiver(mReceiver, filter);
+            mConnectUUID.setOnClickListener(v -> {
+                //Turn on bluetooth if not on
+                if (!mBlueAdapter.isEnabled()) {
+                    //intent to on bluetooth
+                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    activityResultLauncher.launch(intent);
                 }
+
+                //Register the receiver to receive broadcasts
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(BluetoothDevice.ACTION_FOUND);
+                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+                registerReceiver(mReceiver, filter);
+
+                //Start discovering nearby bluetooth devices
+                mBlueAdapter.startDiscovery();
+                mBlueAdapter.getBluetoothLeScanner();
             });
 
             //on btn click
@@ -240,7 +256,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     showToast("Turning On Bluetooth...");
                     //intent to on bluetooth
                     Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    //startActivityForResult(intent,REQUEST_ENABLE_BT);
+                    //startActivityForResult(intent,REQUEST_ENABLE_BT);     //Deprecated for activityResultLauncher
                     activityResultLauncher.launch(intent);
                 } else {
                     showToast("Bluetooth is already on");
