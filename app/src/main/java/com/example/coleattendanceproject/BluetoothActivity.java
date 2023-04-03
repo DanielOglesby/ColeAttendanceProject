@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelUuid;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -56,6 +57,9 @@ public class BluetoothActivity extends AppCompatActivity {
     private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
 
+    //Save list of discovered devices to check for UUIDs later
+    ArrayList<BluetoothDevice> mDeviceList = new ArrayList<BluetoothDevice>();
+
     //Make a receiver to handle discovery
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @SuppressLint("MissingPermission")
@@ -64,18 +68,24 @@ public class BluetoothActivity extends AppCompatActivity {
             if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                 //Bluetooth device found
                 mDevice = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
+                mDeviceList.add(mDevice);
                 //Logging found devices for testing
                 Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
-                //Check device UUID
-                if(mDevice.getUuids() != null)
-                {
-                    showToast("getUuids worked");
-                    for(ParcelUuid uuid : mDevice.getUuids()) {
-                        //Logging uuid found from devices
-                        Log.d("BTUUID",uuid.toString());
-
-                        if(uuid.getUuid().equals(myUUID)) {
+            }
+            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
+                // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
+                if (!mDeviceList.isEmpty()) {
+                    mDevice = mDeviceList.remove(0);
+                    mDevice.fetchUuidsWithSdp();
+                }
+            }
+            else if(BluetoothDevice.ACTION_UUID.equals(intent.getAction())) {
+                //BluetoothDevice extraDevice = intent.getParcelableExtra((BluetoothDevice.EXTRA_DEVICE));          //May be unnecessary TBD
+                Parcelable[] uuidList = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
+                if (uuidList != null) {
+                    for (Parcelable uuid : uuidList) {
+                        Log.d("BTUUID", "Device: "+  mDevice.getName() + " with UUID: " + uuid.toString());
+                        if (uuid.equals(myUUID)) {
                             //Connect to device
                             //UUID taken from (Taken from Teams Attendance App Docx)
                             try {
@@ -84,22 +94,26 @@ public class BluetoothActivity extends AppCompatActivity {
                                 showToast("Connection Successful");
                                 requestInformation();   //Not tested yet
                                 //TODO:Request attendance sheet?
-                            } catch (IOException e) {
+                            }
+                            catch (IOException e) {
                                 showToast("Failed to connect");
                             }
-                            //Stop discovery
-                            mBlueAdapter.cancelDiscovery();
                             //Unregister receiver
                             unregisterReceiver(mReceiver);
                             break;
                         }
                     }
                 }
-            }
-            if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction()))
-            {
-                  //Unregister receiver
-                  unregisterReceiver(mReceiver);
+                if (!mDeviceList.isEmpty()) {
+                    mDevice = mDeviceList.remove(0);
+                    mDevice.fetchUuidsWithSdp();
+                }
+                else {
+                    //Stop discovery
+                    mBlueAdapter.cancelDiscovery();
+                    //Unregister receiver
+                    unregisterReceiver(mReceiver);
+                }
             }
         }
     };
@@ -237,6 +251,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 //Register the receiver to receive broadcasts
                 IntentFilter filter = new IntentFilter();
                 filter.addAction(BluetoothDevice.ACTION_FOUND);
+                filter.addAction(BluetoothDevice.ACTION_UUID);
                 filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
                 filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
                 registerReceiver(mReceiver, filter);
