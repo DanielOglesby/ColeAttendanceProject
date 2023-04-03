@@ -173,10 +173,12 @@ public class BluetoothActivity extends AppCompatActivity {
 
             //on btn connect to device click
             mConnectUUID.setOnClickListener(new View.OnClickListener() {
+
                 @Override
                 public void onClick(View v) {
                     //Turn on bluetooth if not on
                     if (!mBlueAdapter.isEnabled()) {
+
                         //intent to on bluetooth
                         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         activityResultLauncher.launch(intent);
@@ -196,9 +198,17 @@ public class BluetoothActivity extends AppCompatActivity {
                                 //Device found
                                 mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
+                                //Connect to the device using ConnectThread
+                                showToast("Starting ConnectThread\"");
+                                Log.d("BroadcastReceiver", "Starting ConnectThread");
+                                ConnectThread connectThread = new ConnectThread(mDevice);
+                                connectThread.start();
+
                                 //Connect to device
                                 //UUID taken from (Taken from Teams Attendance App Docx)
                                 //TODO: IOException handling and figure out connect/disconnect
+
+                                /*
                                 try {
                                     mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
                                     mSocket.connect();
@@ -206,10 +216,14 @@ public class BluetoothActivity extends AppCompatActivity {
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
+                                */
+
                                 //Stop discovery
                                 mBlueAdapter.cancelDiscovery();
                                 //Unregister receiver
                                 unregisterReceiver(this);
+
+
                             }
                             else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                                 showToast("Device not found");
@@ -331,5 +345,67 @@ public class BluetoothActivity extends AppCompatActivity {
     private void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
+    @SuppressLint("MissingPermission")
+    private class ConnectThread extends Thread {
+        private final String TAG = "ConnectThread";
+        private final BluetoothDevice mmDevice;
+        private final BluetoothSocket mmSocket;
+
+        public ConnectThread(BluetoothDevice device) {
+            BluetoothSocket tmpSocket = null;
+            mmDevice = device;
+
+            try {
+                tmpSocket = device.createRfcommSocketToServiceRecord(myUUID);
+            } catch (IOException e) {
+                Log.e("BluetoothActivity", "Socket's create() method failed", e);
+            }
+
+            mmSocket = tmpSocket;
+        }
+        @SuppressLint("MissingPermission")
+        @Override
+        public void run() {
+
+            // Cancel discovery as it will slow down the connection
+            mBlueAdapter.cancelDiscovery();
+
+            BluetoothSocket tmpSocket = null;
+            Log.d(TAG, "Attempting to create a socket");
+
+            try {
+                tmpSocket = mmDevice.createRfcommSocketToServiceRecord(myUUID);
+            } catch (IOException e) {
+                Log.e(TAG, "Socket's create() method failed", e);
+            }
+
+            Log.d(TAG, "Socket created");
+
+            try {
+                mmSocket.connect();
+            } catch (IOException connectException) {
+                // Unable to connect; close the socket and return
+                try {
+                    mmSocket.close();
+                } catch (IOException closeException) {
+                    Log.e("BluetoothActivity", "Could not close the client socket", closeException);
+                }
+                return;
+            }
+
+            // Connection successful, perform work with the connected socket
+            // TODO: Request attendance sheet?
+        }
+
+        // Call this method from the main activity to shut down the connection
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e("BluetoothActivity", "Could not close the client socket", e);
+            }
+        }
+    }
+
 
 }
