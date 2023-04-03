@@ -66,7 +66,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
             if(BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //Bluetooth device found
-                mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                mDevice = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 //Logging found devices for testing
                 Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
@@ -92,23 +92,16 @@ public class BluetoothActivity extends AppCompatActivity {
                             //Stop discovery
                             mBlueAdapter.cancelDiscovery();
                             //Unregister receiver
-                            unregisterReceiver(this);
+                            unregisterReceiver(mReceiver);
                             break;
                         }
                     }
                 }
-                else
-                {
-                    showToast("No devices found (1)");
-                }
-            }
-            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                showToast("No devices found(2)");
             }
         }
     };
 
-    //Unregister receiver when done
+    //Ensures mReceiver is unregistered when done
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -247,7 +240,6 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 //Start discovering nearby bluetooth devices
                 mBlueAdapter.startDiscovery();
-                mBlueAdapter.getBluetoothLeScanner();
             });
 
             //on btn click
@@ -284,7 +276,8 @@ public class BluetoothActivity extends AppCompatActivity {
                         PreferenceManager.getDefaultSharedPreferences(BluetoothActivity.this).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
                     }
                     catch (IllegalArgumentException e) {
-                        showToast("Invalid UUID input");
+                        showToast("Invalid UUID input. Resetting. . .");
+
                     }
                 });
 
