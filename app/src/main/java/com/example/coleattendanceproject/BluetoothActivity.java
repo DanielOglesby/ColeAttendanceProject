@@ -61,10 +61,7 @@ public class BluetoothActivity extends AppCompatActivity {
         @SuppressLint("MissingPermission")
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-
-            if(BluetoothDevice.ACTION_FOUND.equals(action)) {
+            if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                 //Bluetooth device found
                 mDevice = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
@@ -73,6 +70,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 //Check device UUID
                 if(mDevice.getUuids() != null)
                 {
+                    showToast("getUuids worked");
                     for(ParcelUuid uuid : mDevice.getUuids()) {
                         //Logging uuid found from devices
                         Log.d("BTUUID",uuid.toString());
@@ -97,6 +95,11 @@ public class BluetoothActivity extends AppCompatActivity {
                         }
                     }
                 }
+            }
+            if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction()))
+            {
+                  //Unregister receiver
+                  unregisterReceiver(mReceiver);
             }
         }
     };
