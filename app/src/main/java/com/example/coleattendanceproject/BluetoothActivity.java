@@ -13,7 +13,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -58,7 +57,7 @@ public class BluetoothActivity extends AppCompatActivity {
     private BluetoothSocket mSocket;
 
     //Save list of discovered devices to check for UUIDs later
-    ArrayList<BluetoothDevice> mDeviceList = new ArrayList<BluetoothDevice>();
+    ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
 
     //Make a receiver to handle discovery
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -67,7 +66,7 @@ public class BluetoothActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                 //Bluetooth device found
-                mDevice = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 mDeviceList.add(mDevice);
                 //Logging found devices for testing
                 Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
@@ -84,7 +83,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 Parcelable[] uuidList = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
                 if (uuidList != null) {
                     for (Parcelable uuid : uuidList) {
-                        Log.d("BTUUID", "Device: "+  mDevice.getName() + " with UUID: " + uuid.toString());
+                        Log.d("BT_UUID", "Device: "+  mDevice.getName() + " with UUID: " + uuid.toString());
                         if (uuid.toString().equals(myUUID.toString())) {
                             Log.d("DEVICE", "FOUND MATCH");
                             //Connect to device
