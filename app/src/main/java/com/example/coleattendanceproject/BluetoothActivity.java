@@ -85,14 +85,19 @@ public class BluetoothActivity extends AppCompatActivity {
                 if (uuidList != null) {
                     for (Parcelable uuid : uuidList) {
                         Log.d("BTUUID", "Device: "+  mDevice.getName() + " with UUID: " + uuid.toString());
-                        if (uuid.equals(myUUID)) {
+                        if (uuid.toString().equals(myUUID.toString())) {
+                            Log.d("DEVICE", "FOUND MATCH");
                             //Connect to device
                             //UUID taken from (Taken from Teams Attendance App Docx)
                             try {
                                 mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
                                 mSocket.connect();
                                 showToast("Connection Successful");
-                                requestInformation();   //Not tested yet
+                                InputStream inputStream = mSocket.getInputStream();
+                                OutputStream outputStream = mSocket.getOutputStream();
+                                byte[] buffer = new byte[1024];
+                                int numBytes = inputStream.read(buffer);
+                                String receivedMessage = new String(buffer, 0, numBytes);
                                 //TODO:Request attendance sheet?
                             }
                             catch (IOException e) {
@@ -112,7 +117,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     //Stop discovery
                     mBlueAdapter.cancelDiscovery();
                     //Unregister receiver
-                    unregisterReceiver(mReceiver);
+                    //unregisterReceiver(mReceiver);
                 }
             }
         }
