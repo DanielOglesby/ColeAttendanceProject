@@ -90,6 +90,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         Log.d("BT_UUID", "Device: "+  mDevice.getName() + " with UUID: " + uuid.toString());
                         if (uuid.toString().equals(myUUID.toString())) {
                             Log.d("DEVICE", "FOUND MATCH");
+
                             //Connect to device
                             //UUID taken from (Taken from Teams Attendance App Docx)
                             try {
