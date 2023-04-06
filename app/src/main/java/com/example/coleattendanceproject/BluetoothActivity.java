@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -55,6 +56,9 @@ public class BluetoothActivity extends AppCompatActivity {
     private UUID myUUID;
     private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
+    //Prevents connect to device button from
+    private boolean isDiscovering = false;
+
 
     //Save list of discovered devices to check for UUIDs later
     ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
@@ -97,6 +101,8 @@ public class BluetoothActivity extends AppCompatActivity {
                                 byte[] buffer = new byte[1024];
                                 int numBytes = inputStream.read(buffer);
                                 String receivedMessage = new String(buffer, 0, numBytes);
+                                outputStream.close();
+                                inputStream.close();
                                 //TODO:Request attendance sheet?
                             }
                             catch (IOException e) {
@@ -115,19 +121,14 @@ public class BluetoothActivity extends AppCompatActivity {
                 else {
                     //Stop discovery
                     mBlueAdapter.cancelDiscovery();
+                    mConnectUUID.setEnabled(true);
+                    isDiscovering = false;
                     //Unregister receiver
                     //unregisterReceiver(mReceiver);
                 }
             }
         }
     };
-
-    //Ensures mReceiver is unregistered when done
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(mReceiver);
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -245,6 +246,14 @@ public class BluetoothActivity extends AppCompatActivity {
 
             //on btn connect to device(UUID) click
             mConnectUUID.setOnClickListener(v -> {
+                if(isDiscovering) {
+                    return;     //Don't start discovery if already discovering
+                }
+
+                //Disable button until finished discovering
+                mConnectUUID.setEnabled(false);
+                isDiscovering = true;
+
                 //Turn on bluetooth if not on
                 if (!mBlueAdapter.isEnabled()) {
                     //intent to on bluetooth
@@ -337,19 +346,39 @@ public class BluetoothActivity extends AppCompatActivity {
         return false;
     }
 
-    //Helper code for data transmission between desktop and mobile applications
-    public void requestInformation() throws IOException {
-        //Variables
-        InputStream inputStream = mSocket.getInputStream();
-        OutputStream outputStream = mSocket.getOutputStream();
+    //Test Code
+    //private BluetoothSocket mSocket;
+    private Handler mHandler = new Handler();
+    // Connect to the Bluetooth device
+    private void connectToDevice(final BluetoothDevice device) {
+        new Thread(new Runnable() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void run() {
+                try {
+                    // Connect to the device
+                    mSocket = device.createRfcommSocketToServiceRecord(myUUID);
+                    mSocket.connect();
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Connection successful, update UI
+                            showToast("Connection Successful");
+                        }
+                    });
 
-        //Send request for data
-        String message = "req here";
-        outputStream.write(message.getBytes());
-
-        byte[] buffer = new byte[1024];
-        int numBytes = inputStream.read(buffer);
-        String receivedMessage = new String(buffer, 0, numBytes);
+                    // Perform data transfer...
+                } catch (IOException e) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Connection failed, update UI
+                            showToast("Failed to connect");
+                        }
+                    });
+                }
+            }
+        }).start();
     }
 
     //Helper code for bluetooth permissions
