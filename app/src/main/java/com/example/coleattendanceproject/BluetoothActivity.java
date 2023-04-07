@@ -93,7 +93,8 @@ public class BluetoothActivity extends AppCompatActivity {
 
                             //Connect to device
                             //UUID taken from (Taken from Teams Attendance App Docx)
-                            try {
+                            new ConnectThread(mDevice, myUUID);
+                            /*try {
                                 mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
                                 mSocket.connect();
                                 showToast("Connection Successful");
@@ -108,10 +109,7 @@ public class BluetoothActivity extends AppCompatActivity {
                             }
                             catch (IOException e) {
                                 showToast("Failed to connect");
-                            }
-                            //Unregister receiver
-                            unregisterReceiver(mReceiver);
-                            break;
+                            }*/
                         }
                     }
                 }
@@ -125,7 +123,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     mConnectUUID.setEnabled(true);
                     isDiscovering = false;
                     //Unregister receiver
-                    //unregisterReceiver(mReceiver);
+                    unregisterReceiver(mReceiver);
                 }
             }
         }
