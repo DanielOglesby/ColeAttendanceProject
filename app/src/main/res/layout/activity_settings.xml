@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    tools:context=".SettingsActivity">
 
-    <androidx.appcompat.widget.AppCompatButton
+    <Button
         android:id="@+id/clr_attend"
-        android:layout_width="272dp"
-        android:layout_height="80dp"
-        android:layout_marginTop="160dp"
-        android:background="@color/utd_silver"
-        android:text="Clear attendance sheet"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/clear_signed"
-        android:layout_width="272dp"
-        android:layout_height="80dp"
-        android:layout_marginTop="100dp"
-        android:background="@color/utd_silver"
-        android:text="Clear signed-in students"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/clr_attend" />
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar2"
-        android:layout_width="409dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/utd_green"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
+        android:minWidth="300dp"
+        android:minHeight="75dp"
+        android:layout_marginTop="200dp"
+        android:background="@color/utd_orange"
+        android:text="@string/clear_attendance_sheet"
+        android:textColor="@color/black"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/clear_signed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="300dp"
+        android:minHeight="75dp"
+        android:layout_marginTop="100dp"
+        android:background="@color/utd_orange"
+        android:text="@string/clear_signed_in_students"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clr_attend"
+        style="@style/Base.Widget.AppCompat.Button.Colored"/>
+
+</LinearLayout>
