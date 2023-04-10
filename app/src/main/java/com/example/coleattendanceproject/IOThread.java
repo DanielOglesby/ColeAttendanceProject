@@ -32,6 +32,29 @@ public class IOThread extends Thread {
         oStream = testOut;
     }
 
+    @Override
+    public void run() {
+        //Request Attendance Sheet
+        getAttendance("*ID*");
+    }
+
+    private void getAttendance(String message) {
+        byte[] buffer = message.getBytes();
+        try {
+            oStream.write(buffer);
+            oStream.flush();
+
+            byte[] received = new byte[1024];
+            int responseBytes = iStream.read(received);
+            String response = new String(received, 0, responseBytes);
+            Log.d("IO", "Response received: " + response);
+
+        }
+        catch (IOException e) {
+            Log.e("IO", "Error sending/receiving message");
+        }
+    }
+
     public void cancel() {
         try {
             mSocket.close();
