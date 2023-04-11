@@ -73,9 +73,6 @@ public class BluetoothActivity extends AppCompatActivity {
             if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                 //Bluetooth device found
                 mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if(!mDeviceList.isEmpty()) {
-                    mDeviceList.clear();
-                }
                 mDeviceList.add(mDevice);
                 //Logging found devices for testing
                 Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
@@ -94,6 +91,8 @@ public class BluetoothActivity extends AppCompatActivity {
                     }
                 }
                 //Stop discovery
+                Log.d("BT", "Discovery cancelled properly");
+                mDeviceList.clear();
                 mBlueAdapter.cancelDiscovery();
                 mConnectUUID.setEnabled(true);          //Re-enable Connect to device button
                 isDiscovering = false;                  //Re-enable Connect to device button

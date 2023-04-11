@@ -50,6 +50,12 @@ public class ConnectThread extends AsyncTask<Void, Void, Boolean> {
             // Connection failed
             Log.e("BT", "Connection failed");
             status = false;
+            try {
+                mSocket.close();
+            }
+            catch (IOException e) {
+                Log.e("SOCKET", "Failed to close socket after failed connection");
+            }
         }
     }
 
