@@ -44,7 +44,7 @@ public class IOThread extends Thread {
             oStream.write(buffer);
             oStream.flush();
 
-            byte[] received = new byte[1024];
+            byte[] received = new byte[8192];
             int responseBytes = iStream.read(received);
             String response = new String(received, 0, responseBytes);
             Log.d("IO", "Response received: " + response);

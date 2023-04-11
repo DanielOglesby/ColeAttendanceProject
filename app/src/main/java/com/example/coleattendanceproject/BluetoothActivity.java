@@ -64,67 +64,41 @@ public class BluetoothActivity extends AppCompatActivity {
     ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
 
     //Make a receiver to handle discovery
+    //Whenever a scan is made, the function is called.
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @SuppressLint("MissingPermission")
         @Override
         public void onReceive(Context context, Intent intent) {
+            //If scan found device, add to device list (mDeviceList)
             if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                 //Bluetooth device found
                 mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if(!mDeviceList.isEmpty()) {
+                    mDeviceList.clear();
+                }
                 mDeviceList.add(mDevice);
                 //Logging found devices for testing
                 Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
             }
+            //Once finished scanning, parse through list of devices found (mDeviceList) and try to connect on UUID
             else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                 // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
-                if (!mDeviceList.isEmpty()) {
-                    mDevice = mDeviceList.remove(0);
-                    mDevice.fetchUuidsWithSdp();
-                }
-            }
-            else if(BluetoothDevice.ACTION_UUID.equals(intent.getAction())) {
-                //BluetoothDevice extraDevice = intent.getParcelableExtra((BluetoothDevice.EXTRA_DEVICE));          //May be unnecessary TBD
-                Parcelable[] uuidList = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
-                if (uuidList != null) {
-                    for (Parcelable uuid : uuidList) {
-                        Log.d("BT_UUID", "Device: "+  mDevice.getName() + " with UUID: " + uuid.toString());
-                        if (uuid.toString().equals(myUUID.toString())) {
-                            Log.d("DEVICE", "FOUND MATCH");
-
-                            //Connect to device
-                            //UUID taken from (Taken from Teams Attendance App Docx)
-                            new ConnectThread(mDevice, myUUID);
-                            /*try {
-                                mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
-                                mSocket.connect();
-                                showToast("Connection Successful");
-                                InputStream inputStream = mSocket.getInputStream();
-                                OutputStream outputStream = mSocket.getOutputStream();
-                                byte[] buffer = new byte[1024];
-                                int numBytes = inputStream.read(buffer);
-                                String receivedMessage = new String(buffer, 0, numBytes);
-                                outputStream.close();
-                                inputStream.close();
-                                //TODO:Request attendance sheet?
-                            }
-                            catch (IOException e) {
-                                showToast("Failed to connect");
-                            }*/
+                for (BluetoothDevice currentDevice : mDeviceList) {
+                    //Skips any device with null name
+                    if(currentDevice.getName() != null) {
+                        Log.d("DEVICE", "Attempting to connect to device: " + currentDevice.getName());
+                        ConnectThread mConnection = new ConnectThread(currentDevice, myUUID);
+                        if(mConnection.getConnectionStatus() == true) {
+                            break;
                         }
                     }
                 }
-                if (!mDeviceList.isEmpty()) {
-                    mDevice = mDeviceList.remove(0);
-                    mDevice.fetchUuidsWithSdp();
-                }
-                else {
-                    //Stop discovery
-                    mBlueAdapter.cancelDiscovery();
-                    mConnectUUID.setEnabled(true);
-                    isDiscovering = false;
-                    //Unregister receiver
-                    unregisterReceiver(mReceiver);
-                }
+                //Stop discovery
+                mBlueAdapter.cancelDiscovery();
+                mConnectUUID.setEnabled(true);          //Re-enable Connect to device button
+                isDiscovering = false;                  //Re-enable Connect to device button
+                //Unregister receiver
+                unregisterReceiver(mReceiver);
             }
         }
     };
