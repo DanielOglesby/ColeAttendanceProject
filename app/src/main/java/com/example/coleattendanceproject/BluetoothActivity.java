@@ -45,7 +45,8 @@ import java.util.UUID;
 public class BluetoothActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 0;
-
+    private static final int REQUEST_UUID = 1;
+    private Context mainActivityContext;
     TextView mStatusBlueTv, mPairedTv, mUUID;
     ImageView mBlueIv;
     Button mOnBtn, mConnectUUID, mChangeUUID;
@@ -55,8 +56,7 @@ public class BluetoothActivity extends AppCompatActivity {
     //Used to connect to desktop attendance app
     private UUID myUUID;
     private BluetoothDevice mDevice;
-    private BluetoothSocket mSocket;
-    //Prevents connect to device button from
+    //Prevents connect to device button from multiple discoveries
     private boolean isDiscovering = false;
 
 
@@ -84,10 +84,10 @@ public class BluetoothActivity extends AppCompatActivity {
                     //Skips any device with null name
                     if(currentDevice.getName() != null) {
                         Log.d("DEVICE", "Attempting to connect to device: " + currentDevice.getName());
-                        ConnectThread mConnection = new ConnectThread(currentDevice, myUUID);
-                        if(mConnection.getConnectionStatus() == true) {
-                            break;
-                        }
+                        //ConnectThread mConnection = new ConnectThread(currentDevice, myUUID);
+                        //if(mConnection.getConnectionStatus() == true) {
+                        //    break;
+                        //}
                     }
                 }
                 //Stop discovery
@@ -98,6 +98,10 @@ public class BluetoothActivity extends AppCompatActivity {
                 isDiscovering = false;                  //Re-enable Connect to device button
                 //Unregister receiver
                 unregisterReceiver(mReceiver);
+                Intent mainIntent = new Intent(BluetoothActivity.this, MainActivity.class);
+                mainIntent.putParcelableArrayListExtra("devices", mDeviceList);
+                mainIntent.putExtra("uuid", myUUID.toString());
+                finish();
             }
         }
     };
@@ -137,8 +141,11 @@ public class BluetoothActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
 
+        //Save context passed from MainActivity
+        mainActivityContext = (Context) getIntent().getSerializableExtra("mainContext");
+
         // Get the saved UUID string value from SharedPreferences
-        String uuidString = PreferenceManager.getDefaultSharedPreferences(BluetoothActivity.this).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
+        String uuidString = PreferenceManager.getDefaultSharedPreferences(mainActivityContext).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
         // If a valid UUID string is retrieved, update uuid
         if (!uuidString.isEmpty()) {
             try {
@@ -164,7 +171,9 @@ public class BluetoothActivity extends AppCompatActivity {
         if (mBlueAdapter == null) {
             showToast("Bluetooth not supported");
             finish();
-        } else {
+        }
+        //Permission checks can be removed.
+        else {
             //Check permissions for dangerous permissions
             String[] permissions;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -276,7 +285,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         mUUID.setText(myUUID.toString());
 
                         // Save the new UUID to SharedPreferences
-                        PreferenceManager.getDefaultSharedPreferences(BluetoothActivity.this).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
+                        PreferenceManager.getDefaultSharedPreferences(mainActivityContext).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
                     }
                     catch (IllegalArgumentException e) {
                         showToast("Invalid UUID input. Resetting. . .");
@@ -318,59 +327,9 @@ public class BluetoothActivity extends AppCompatActivity {
         return false;
     }
 
-    //Test Code
-    //private BluetoothSocket mSocket;
-    private Handler mHandler = new Handler();
-    // Connect to the Bluetooth device
-    private void connectToDevice(final BluetoothDevice device) {
-        new Thread(new Runnable() {
-            @SuppressLint("MissingPermission")
-            @Override
-            public void run() {
-                try {
-                    // Connect to the device
-                    mSocket = device.createRfcommSocketToServiceRecord(myUUID);
-                    mSocket.connect();
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Connection successful, update UI
-                            showToast("Connection Successful");
-                        }
-                    });
-
-                    // Perform data transfer...
-                } catch (IOException e) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Connection failed, update UI
-                            showToast("Failed to connect");
-                        }
-                    });
-                }
-            }
-        }).start();
-    }
-
-    //Helper code for bluetooth permissions
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        //More cases can be added for new menu item
-        switch (requestCode) {
-            case REQUEST_ENABLE_BT:
-                if(resultCode == RESULT_OK) {
-                    //bluetooth is on
-                    mBlueIv.setImageResource(R.drawable.ic_action_on);
-                    showToast("Bluetooth is on");
-                }
-                else {
-                    //user denied to turn bluetooth on
-                    showToast("couldn't turn on bluetooth");
-                }
-                break;
-        }
-        super.onActivityResult(requestCode, resultCode, data);
+    //Get UUID to MainActivity
+    public UUID getUUID() {
+        return myUUID;
     }
 
     private void setIcon()

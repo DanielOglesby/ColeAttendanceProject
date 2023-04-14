@@ -17,6 +17,7 @@ public class ConnectThread extends AsyncTask<Void, Void, Boolean> {
     private BluetoothSocket mSocket;
     private UUID myUUID;
     private Boolean status = false;
+    IOThread myThread;
 
     public ConnectThread(BluetoothDevice device, UUID uuid) {
         mDevice = device;
@@ -44,7 +45,9 @@ public class ConnectThread extends AsyncTask<Void, Void, Boolean> {
             Log.d("BT", "Connection successful!");
 
             // If successfully connected, do IO in separate thread.
-            new IOThread(mSocket).start();
+            IOThread ioThread = new IOThread(mSocket);
+            myThread = ioThread;
+            myThread.start();
             status = true;
         } else {
             // Connection failed
@@ -59,6 +62,9 @@ public class ConnectThread extends AsyncTask<Void, Void, Boolean> {
         }
     }
 
+    public void write(String scanner) {
+        myThread.write(scanner);
+    }
     public Boolean getConnectionStatus() {
         return status;
     }

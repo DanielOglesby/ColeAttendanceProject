@@ -32,27 +32,41 @@ public class IOThread extends Thread {
         oStream = testOut;
     }
 
-    @Override
     public void run() {
-        //Request Attendance Sheet
-        getAttendance("*ID*");
+        //Buffer for stream
+        byte[] buffer = new byte[1024];
+
+        //Bytes returned
+        int bytes;
+
+        while (true) {
+            try {
+                bytes = iStream.read(buffer);
+                String message = new String (buffer, 0, bytes);
+                Log.d("IO", "Incoming message: " + message);
+
+            } catch (IOException e) {
+                Log.e("IO", "Error receiving message");
+                break;
+            }
+        }
     }
 
-    private void getAttendance(String message) {
-        byte[] buffer = message.getBytes();
+    //Write to Attend.exe
+    public void write(String scanner) {
+        byte[] buffer = scanner.getBytes();
         try {
             oStream.write(buffer);
             oStream.flush();
-
-            byte[] received = new byte[8192];
-            int responseBytes = iStream.read(received);
-            String response = new String(received, 0, responseBytes);
-            Log.d("IO", "Response received: " + response);
-
         }
         catch (IOException e) {
             Log.e("IO", "Error sending/receiving message");
         }
+    }
+
+    //Get attendance sheet from Attend.exe (TODO: still needs to return string)
+    private void getAttendance() {
+        this.write("*ID*");
     }
 
     public void cancel() {
