@@ -257,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                         if(currentDevice.getName() != null) {
                             Log.d("DEVICE", "Attempting to connect to device: " + currentDevice.getName());
                             mConnection = new ConnectThread(currentDevice, myUUID);
+                            mConnection.start();
                             if(mConnection.getConnectionStatus() == true) {
                                 mConnection.write("*ID*");
                                 connectStatus.setText(R.string.connected);

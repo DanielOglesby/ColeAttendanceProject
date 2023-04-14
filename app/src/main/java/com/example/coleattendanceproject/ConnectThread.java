@@ -11,7 +11,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.UUID;
 
-public class ConnectThread extends AsyncTask<Void, Void, Boolean> {
+public class ConnectThread extends Thread {
     //Variables
     private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
@@ -22,25 +22,16 @@ public class ConnectThread extends AsyncTask<Void, Void, Boolean> {
     public ConnectThread(BluetoothDevice device, UUID uuid) {
         mDevice = device;
         myUUID = uuid;
-        onPostExecute(doInBackground());
     }
 
+
+    // combine next two functions into run function
+    // should be threaded
     @SuppressLint("MissingPermission")
-    @Override
-    protected Boolean doInBackground(Void... voids) {
+    public void run() {
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
             mSocket.connect();
-            return true;
-        }
-        catch (IOException e) {
-            return false;
-        }
-    }
-
-    @Override
-    protected void onPostExecute(Boolean success) {
-        if (success) {
             // Connection successful
             Log.d("BT", "Connection successful!");
 
@@ -49,18 +40,19 @@ public class ConnectThread extends AsyncTask<Void, Void, Boolean> {
             myThread = ioThread;
             myThread.start();
             status = true;
-        } else {
+        } catch (IOException e) {
             // Connection failed
             Log.e("BT", "Connection failed");
             status = false;
             try {
                 mSocket.close();
             }
-            catch (IOException e) {
+            catch (IOException a) {
                 Log.e("SOCKET", "Failed to close socket after failed connection");
             }
         }
     }
+
 
     public void write(String scanner) {
         myThread.write(scanner);
