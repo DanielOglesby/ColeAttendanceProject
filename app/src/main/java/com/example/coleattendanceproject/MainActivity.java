@@ -18,7 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -27,7 +26,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -78,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 case FINISHED:
                     btButton.setEnabled(true);
                     btStatus.setText(R.string.click_the_icon_to_scan);
+                    connectStatus.setText(R.string.currently_not_connected);
                     break;
                 default:
                     super.handleMessage(msg);

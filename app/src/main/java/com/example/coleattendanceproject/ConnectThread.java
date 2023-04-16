@@ -22,6 +22,7 @@ public class ConnectThread extends Thread {
     //Status codes for handler
     private static final int CONNECTED = 1;
     private static final int FAILED = 2;
+    private static final int FINISHED = 3;
     private Handler mHandler;
 
     public ConnectThread(ArrayList<BluetoothDevice> device, UUID uuid, Handler handler) {
@@ -58,6 +59,7 @@ public class ConnectThread extends Thread {
                 }
             }
         }
+        mHandler.sendEmptyMessage(FINISHED);
     }
 
     //Get attendance from Attend.exe (TODO: return string?)
