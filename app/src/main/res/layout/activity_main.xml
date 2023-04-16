@@ -25,7 +25,7 @@
         android:id="@+id/btStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/click_the_icon_to_scan"
+        android:text=""
         android:textAlignment="center"
         android:textSize="20sp"
         android:textColor="?android:textColorPrimary"
@@ -58,7 +58,7 @@
         android:ems="10"
         android:text="@string/defaultMsg"
         android:textAlignment="center"
-        android:textColor="?android:textColorPrimaryInverse"
+        android:textColor="@color/white"
         android:textSize="20sp"
         android:layout_marginTop="64dp"
         android:layout_marginBottom="64dp" />

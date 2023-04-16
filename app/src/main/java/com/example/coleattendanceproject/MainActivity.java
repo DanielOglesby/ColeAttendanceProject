@@ -18,6 +18,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -48,10 +52,39 @@ public class MainActivity extends AppCompatActivity implements Serializable
 
     //Bluetooth components
     private BluetoothAdapter mBlueAdapter = BluetoothAdapter.getDefaultAdapter();
-    BluetoothDevice mDevice;
     //Used for attempting connections to devices paired or discovered
-    ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
-    ConnectThread mConnection;
+    private final ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
+    private ConnectThread mConnection;
+    //Status codes for handler
+    private static final int CONNECTED = 1;
+    private static final int ERROR = 2;
+    private static final int FINISHED = 3;
+    private Handler mHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            switch (msg.what) {
+                case CONNECTED:
+                    // Connection successful, do something
+                    Log.d("BT", "Connection successful!");
+                    connectStatus.setText(R.string.connected);
+                    editText.setEnabled(true);
+                    mConnection.getAttendance();
+                    break;
+                case ERROR:
+                    // Connection failed, do something
+                    Log.e("BT", "Connection failed");
+                    editText.setEnabled(false);
+                    break;
+                case FINISHED:
+                    btButton.setEnabled(true);
+                    btStatus.setText(R.string.click_the_icon_to_scan);
+                    break;
+                default:
+                    super.handleMessage(msg);
+                    break;
+            }
+        }
+    };
 
     //TODO: Cleanup on app close
 
@@ -128,15 +161,23 @@ public class MainActivity extends AppCompatActivity implements Serializable
             }
             if (!permissionsToRequest.isEmpty()) {
                 ActivityCompat.requestPermissions(MainActivity.this, permissionsToRequest.toArray(new String[0]), 2);
+            } else {
+                Set<BluetoothDevice> pairedDevices = mBlueAdapter.getBondedDevices();
+                if(pairedDevices.size() > 0) {
+                    mDeviceList.addAll(pairedDevices);
+                }
+                btButton.setEnabled(false);
+                connectStatus.setText(R.string.checking_paired_devices);
+                mConnection = new ConnectThread(mDeviceList, myUUID, mHandler);
+                mConnection.start();
             }
-
-
         }
 
         //on btn connect to device(UUID) click
         btButton.setOnClickListener(v -> {
             //Disable button until finished discovering
             btButton.setEnabled(false);
+            btStatus.setText("");
             connectStatus.setText(R.string.checking_discoverable_devices);
 
             //Turn on bluetooth if not on
@@ -157,6 +198,12 @@ public class MainActivity extends AppCompatActivity implements Serializable
             mBlueAdapter.startDiscovery();
         });
 
+        /*if(mConnection.getConnectionStatus() == false) {
+            editText.setEnabled(false);
+        }
+        else {
+            editText.setEnabled(true);
+        }*/
         //TODO SCANNER HERE
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -229,7 +276,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 btButton.setEnabled(false);
                 btStatus.setText(R.string.button_disabled_insufficient_permissions);
                 showToast("Missing permissions for bluetooth functionality.");
-                Log.d("PERMISSIONS", "This ran");
             }
             PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putBoolean("PERMISSIONS", btPermissions).apply();
         }
@@ -244,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 //If scan found device, add to device list (mDeviceList)
                 if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                     //Bluetooth device found
-                    mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    BluetoothDevice mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     mDeviceList.add(mDevice);
                     //Logging found devices for testing
                     Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
@@ -252,21 +298,9 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 //Once finished scanning, parse through list of devices found (mDeviceList) and try to connect on UUID
                 else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     // discovery has finished, try to connect to all found devices
-                    for (BluetoothDevice currentDevice : mDeviceList) {
-                        //Skips any device with null name
-                        if(currentDevice.getName() != null) {
-                            Log.d("DEVICE", "Attempting to connect to device: " + currentDevice.getName());
-                            mConnection = new ConnectThread(currentDevice, myUUID);
-                            mConnection.start();
-                            if(mConnection.getConnectionStatus() == true) {
-                                mConnection.write("*ID*");
-                                connectStatus.setText(R.string.connected);
-                                break;
-                            } else {
-                                connectStatus.setText(R.string.currently_not_connected);
-                            }
-                        }
-                    }
+                    connectStatus.setText(R.string.checking_discoverable_devices);
+                    mConnection = new ConnectThread(mDeviceList, myUUID, mHandler);
+                    mConnection.start();
                     //Stop discovery
                     Log.d("BT", "Discovery cancelled properly");
                     mDeviceList.clear();
