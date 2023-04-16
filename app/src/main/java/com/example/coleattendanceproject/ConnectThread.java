@@ -3,11 +3,8 @@ package com.example.coleattendanceproject;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,15 +12,15 @@ import java.util.UUID;
 
 public class ConnectThread extends Thread {
     //Variables
-    private ArrayList<BluetoothDevice> mDeviceList;
+    private final ArrayList<BluetoothDevice> mDeviceList;
     private BluetoothSocket mSocket;
-    private UUID myUUID;
+    private final UUID myUUID;
     private IOThread myThread;
     //Status codes for handler
     private static final int CONNECTED = 1;
     private static final int FAILED = 2;
     private static final int FINISHED = 3;
-    private Handler mHandler;
+    private final Handler mHandler;
 
     public ConnectThread(ArrayList<BluetoothDevice> device, UUID uuid, Handler handler) {
         mDeviceList = device;
@@ -63,12 +60,14 @@ public class ConnectThread extends Thread {
     }
 
     //Get attendance from Attend.exe (TODO: return string?)
-    public void getAttendance() {
-        this.write("*ID*");
+    public void getAttendance() {myThread.getAttendance();
     }
 
     //Write to Attend.exe
     public void write(String scanner) {
         myThread.write(scanner);
+    }
+    //Close all sockets and streams
+    public void cancel() {myThread.cancel();
     }
 }

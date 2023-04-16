@@ -23,7 +23,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -57,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
     private static final int CONNECTED = 1;
     private static final int ERROR = 2;
     private static final int FINISHED = 3;
-    private Handler mHandler = new Handler(Looper.getMainLooper()) {
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
@@ -197,23 +196,14 @@ public class MainActivity extends AppCompatActivity implements Serializable
             mBlueAdapter.startDiscovery();
         });
 
-        /*if(mConnection.getConnectionStatus() == false) {
-            editText.setEnabled(false);
-        }
-        else {
-            editText.setEnabled(true);
-        }*/
         //TODO SCANNER HERE
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int keyCode, KeyEvent keyEvent) {
-                if (false) {
-                    //mConnection.write(editText.getText().toString());
-                    return true;
-                }
-            return false;
-        }
-        });
+        editText.setOnEditorActionListener((textView, keyCode, keyEvent) -> {
+            if (false) {
+                //mConnection.write(editText.getText().toString());
+                return true;
+            }
+        return false;
+    });
         //String for attendance sheet from Attend.exe
         //String for sign-ins made from mobile attendance app
         //Use editText for newline
@@ -241,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 startActivity(new  Intent(MainActivity.this, SettingsActivity.class));
                 return true;
             }
-            /*
+            /* //TODO: Add this when free time
             case R.id.bluetooth_settings:
             {
                 Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);

@@ -4,19 +4,12 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,86 +18,27 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class BluetoothActivity extends AppCompatActivity {
-
-    private static final int REQUEST_ENABLE_BT = 0;
-    private static final int REQUEST_UUID = 1;
     private Context mainActivityContext;
     TextView mStatusBlueTv, mPairedTv, mUUID;
     ImageView mBlueIv;
-    Button mOnBtn, mConnectUUID, mChangeUUID;
+    Button mOnBtn, mChangeUUID;
 
     BluetoothAdapter mBlueAdapter;
 
     //Used to connect to desktop attendance app
     private UUID myUUID;
-    private BluetoothDevice mDevice;
-    //Prevents connect to device button from multiple discoveries
-    private boolean isDiscovering = false;
-
-
-    //Save list of discovered devices to check for UUIDs later
-    ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
-
-    //Make a receiver to handle discovery
-    //Whenever a scan is made, the function is called.
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @SuppressLint("MissingPermission")
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            //If scan found device, add to device list (mDeviceList)
-            if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
-                //Bluetooth device found
-                mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mDeviceList.add(mDevice);
-                //Logging found devices for testing
-                Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
-            }
-            //Once finished scanning, parse through list of devices found (mDeviceList) and try to connect on UUID
-            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
-                // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
-                for (BluetoothDevice currentDevice : mDeviceList) {
-                    //Skips any device with null name
-                    if(currentDevice.getName() != null) {
-                        Log.d("DEVICE", "Attempting to connect to device: " + currentDevice.getName());
-                        //ConnectThread mConnection = new ConnectThread(currentDevice, myUUID);
-                        //if(mConnection.getConnectionStatus() == true) {
-                        //    break;
-                        //}
-                    }
-                }
-                //Stop discovery
-                Log.d("BT", "Discovery cancelled properly");
-                mDeviceList.clear();
-                mBlueAdapter.cancelDiscovery();
-                mConnectUUID.setEnabled(true);          //Re-enable Connect to device button
-                isDiscovering = false;                  //Re-enable Connect to device button
-                //Unregister receiver
-                unregisterReceiver(mReceiver);
-                Intent mainIntent = new Intent(BluetoothActivity.this, MainActivity.class);
-                mainIntent.putParcelableArrayListExtra("devices", mDeviceList);
-                mainIntent.putExtra("uuid", myUUID.toString());
-                finish();
-            }
-        }
-    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -160,9 +94,7 @@ public class BluetoothActivity extends AppCompatActivity {
         mStatusBlueTv   = findViewById(R.id.statusBluetoothTv);
         mPairedTv       = findViewById(R.id.pairedTv);
         mUUID           = findViewById(R.id.uuid);
-        mBlueIv         = findViewById(R.id.bluetoothIv);
         mOnBtn          = findViewById(R.id.onBtn);
-        mConnectUUID    = findViewById(R.id.connectUUID);
         mChangeUUID     = findViewById(R.id.setUUID);
 
         //adapter
@@ -224,35 +156,6 @@ public class BluetoothActivity extends AppCompatActivity {
                             setIcon();      //Changes bluetooth icon to status of bluetooth
                         }
                     });
-
-            //on btn connect to device(UUID) click
-            mConnectUUID.setOnClickListener(v -> {
-                if(isDiscovering) {
-                    return;     //Don't start discovery if already discovering
-                }
-
-                //Disable button until finished discovering
-                mConnectUUID.setEnabled(false);
-                isDiscovering = true;
-
-                //Turn on bluetooth if not on
-                if (!mBlueAdapter.isEnabled()) {
-                    //intent to on bluetooth
-                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    activityResultLauncher.launch(intent);
-                }
-
-                //Register the receiver to receive broadcasts
-                IntentFilter filter = new IntentFilter();
-                filter.addAction(BluetoothDevice.ACTION_FOUND);
-                filter.addAction(BluetoothDevice.ACTION_UUID);
-                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-                registerReceiver(mReceiver, filter);
-
-                //Start discovering nearby bluetooth devices
-                mBlueAdapter.startDiscovery();
-            });
 
             //on btn click
             mOnBtn.setOnClickListener(v -> {
@@ -325,11 +228,6 @@ public class BluetoothActivity extends AppCompatActivity {
         }
 
         return false;
-    }
-
-    //Get UUID to MainActivity
-    public UUID getUUID() {
-        return myUUID;
     }
 
     private void setIcon()

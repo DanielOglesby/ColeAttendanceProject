@@ -1,10 +1,7 @@
 package com.example.coleattendanceproject;
 
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,10 +62,10 @@ public class IOThread extends Thread {
     }
 
     //Get attendance sheet from Attend.exe (TODO: still needs to return string)
-    private void getAttendance() {
+    public void getAttendance() {
         this.write("*ID*");
     }
-
+    //Close all sockets and streams
     public void cancel() {
         try {
             mSocket.close();
