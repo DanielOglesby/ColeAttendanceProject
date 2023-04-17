@@ -21,9 +21,10 @@ public class ConnectThread extends Thread {
     private static final int FAILED = 2;
     private static final int FINISHED = 3;
     private final Handler mHandler;
+    //Used to stop thread in case of no connection being made.
+    private volatile boolean running = true;
 
     public ConnectThread(ArrayList<BluetoothDevice> device, UUID uuid, Handler handler) {
-        Log.d("CONNECT", "ConnectThread made");
         mDeviceList = device;
         myUUID = uuid;
         mHandler = handler;
@@ -34,9 +35,7 @@ public class ConnectThread extends Thread {
     // should be threaded
     @SuppressLint("MissingPermission")
     public void run() {
-        Log.d("CONNECT", "ConnectThread started");
         for(BluetoothDevice mDevice : mDeviceList) {
-            Log.d("CONNECT", "There are devices in mDeviceList");
             if (mDevice.getName() != null) {
                 Log.d("DEVICE", "Attempting to connect to device: " + mDevice.getName());
                 try {
@@ -47,7 +46,7 @@ public class ConnectThread extends Thread {
                     // If successfully connected, do IO in separate thread.
                     myThread = new IOThread(mSocket);
                     myThread.start();
-                    break;
+                    while(running){}
                 } catch (IOException e) {
                     // Connection failed
                     mHandler.sendEmptyMessage(FAILED);
@@ -64,16 +63,13 @@ public class ConnectThread extends Thread {
     }
 
     //Get attendance from Attend.exe (TODO: return string?)
-    public void getAttendance() {myThread.getAttendance();
-    }
+    public void getAttendance() {myThread.getAttendance();}
 
     //Get incoming messages
     public String getMessages() {return myThread.getMessages();}
 
     //Write to Attend.exe
-    public void write(String scanner) {
-        myThread.write(scanner);
-    }
+    public void write(String scanner) {myThread.write(scanner);}
     //Close all sockets and streams as well as close thread
     public void stopThread() {
         try {
@@ -82,5 +78,6 @@ public class ConnectThread extends Thread {
         catch (NullPointerException e) {
             Log.e("CONNECT", "No existing IOThread myThread.");
         }
+        running = false;
     }
 }

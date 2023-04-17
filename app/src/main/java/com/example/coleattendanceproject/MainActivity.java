@@ -25,6 +25,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
     TextView textView;
     TextView btStatus, connectStatus;
     ImageView btButton;
+    //Test Button
+    Button testBtn;
 
     //Bluetooth components
     private BluetoothAdapter mBlueAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -100,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
         btStatus = findViewById(R.id.btStatus);
         connectStatus = findViewById(R.id.connectStatus);
         btButton = findViewById(R.id.bluetoothButton);
+
 
         //Get image
         setIcon();

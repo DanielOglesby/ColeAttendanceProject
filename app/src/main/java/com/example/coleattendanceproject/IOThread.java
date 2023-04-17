@@ -60,7 +60,7 @@ public class IOThread extends Thread {
             oStream.flush();
         }
         catch (IOException e) {
-            Log.e("IO", "Error sending/receiving message");
+            Log.e("IO", "Error sending message");
         }
     }
 
