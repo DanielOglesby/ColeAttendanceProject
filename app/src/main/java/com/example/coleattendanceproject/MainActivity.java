@@ -22,6 +22,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -218,10 +220,38 @@ public class MainActivity extends AppCompatActivity implements Serializable
             }
         return false;
     });
+        EditText editText = findViewById(R.id.editText);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // This method is called before the text is changed.
+                // nothing happens here
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // This method is called when the text is changed.
+                // runs myFunction method when newline is encountered
+                if (s.toString().contains("\n")) {
+                    myFunction();
+                    Log.d("TESTING","This is the on text changed");
+                }
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                // This method is called after the text is changed.
+                // nothing happens here
+
+            }
+        });
+
         //String for attendance sheet from Attend.exe
         //String for sign-ins made from mobile attendance app
         //Use editText for newline
         //mConnection.write();      //Use this to write to Attend.exe   parameter should take a string
+    }
+
+    private void myFunction() {
+        //This method runs when newline is encountered in editText
     }
 
     //Settings menu
