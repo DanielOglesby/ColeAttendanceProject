@@ -11,6 +11,9 @@ public class IOThread extends Thread {
     private final BluetoothSocket mSocket;
     private final InputStream iStream;
     private final OutputStream oStream;
+    private StringBuilder incomingMessages = new StringBuilder();
+    //Used to stop thread in case of no connection being made.
+    private volatile boolean running = true;
 
     public IOThread(BluetoothSocket socket) {
         //Getting input/output from connection
@@ -36,12 +39,12 @@ public class IOThread extends Thread {
         //Bytes returned
         int bytes;
 
-        while (true) {
+        while (running) {
             try {
                 bytes = iStream.read(buffer);
                 String message = new String (buffer, 0, bytes);
                 Log.d("IO", "Incoming message: " + message);
-
+                incomingMessages.append(message);
             } catch (IOException e) {
                 Log.e("IO", "Error receiving message");
                 break;
@@ -63,10 +66,15 @@ public class IOThread extends Thread {
 
     //Get attendance sheet from Attend.exe (TODO: still needs to return string)
     public void getAttendance() {
+        incomingMessages.setLength(0);      //Clear any previous messages
         this.write("*ID*");
     }
+
+    //Get incoming messages
+    public String getMessages() {return incomingMessages.toString();}
+
     //Close all sockets and streams
-    public void cancel() {
+    public void stopThread() {
         try {
             mSocket.close();
             iStream.close();
@@ -75,5 +83,6 @@ public class IOThread extends Thread {
         catch(IOException e) {
             Log.e("BT", "Socket could not be closed.");
         }
+        running = false;
     }
 }

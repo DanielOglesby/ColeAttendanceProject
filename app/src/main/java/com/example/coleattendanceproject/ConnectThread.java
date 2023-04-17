@@ -23,6 +23,7 @@ public class ConnectThread extends Thread {
     private final Handler mHandler;
 
     public ConnectThread(ArrayList<BluetoothDevice> device, UUID uuid, Handler handler) {
+        Log.d("CONNECT", "ConnectThread made");
         mDeviceList = device;
         myUUID = uuid;
         mHandler = handler;
@@ -33,7 +34,9 @@ public class ConnectThread extends Thread {
     // should be threaded
     @SuppressLint("MissingPermission")
     public void run() {
+        Log.d("CONNECT", "ConnectThread started");
         for(BluetoothDevice mDevice : mDeviceList) {
+            Log.d("CONNECT", "There are devices in mDeviceList");
             if (mDevice.getName() != null) {
                 Log.d("DEVICE", "Attempting to connect to device: " + mDevice.getName());
                 try {
@@ -57,17 +60,27 @@ public class ConnectThread extends Thread {
             }
         }
         mHandler.sendEmptyMessage(FINISHED);
+        mDeviceList.clear();
     }
 
     //Get attendance from Attend.exe (TODO: return string?)
     public void getAttendance() {myThread.getAttendance();
     }
 
+    //Get incoming messages
+    public String getMessages() {return myThread.getMessages();}
+
     //Write to Attend.exe
     public void write(String scanner) {
         myThread.write(scanner);
     }
-    //Close all sockets and streams
-    public void cancel() {myThread.cancel();
+    //Close all sockets and streams as well as close thread
+    public void stopThread() {
+        try {
+            myThread.stopThread();
+        }
+        catch (NullPointerException e) {
+            Log.e("CONNECT", "No existing IOThread myThread.");
+        }
     }
 }

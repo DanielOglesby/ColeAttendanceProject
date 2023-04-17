@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     connectStatus.setText(R.string.connected);
                     editText.setEnabled(true);
                     mConnection.getAttendance();
+                    Log.d("IO", "Messages: " + mConnection.getMessages());
                     break;
                 case ERROR:
                     // Connection failed, do something
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     editText.setEnabled(false);
                     break;
                 case FINISHED:
+                    mConnection.stopThread();
                     btButton.setEnabled(true);
                     btStatus.setText(R.string.click_the_icon_to_scan);
                     connectStatus.setText(R.string.currently_not_connected);
@@ -160,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
             if (!permissionsToRequest.isEmpty()) {
                 ActivityCompat.requestPermissions(MainActivity.this, permissionsToRequest.toArray(new String[0]), 2);
             } else {
+                btStatus.setText("");
                 Set<BluetoothDevice> pairedDevices = mBlueAdapter.getBondedDevices();
                 if(pairedDevices.size() > 0) {
                     mDeviceList.addAll(pairedDevices);
@@ -188,12 +191,19 @@ public class MainActivity extends AppCompatActivity implements Serializable
             //Register the receiver to receive broadcasts
             IntentFilter filter = new IntentFilter();
             filter.addAction(BluetoothDevice.ACTION_FOUND);
-            filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);        //May not be needed. TODO: Test without this filter and see if devices found
+            //filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);        //May not be needed. TODO: Test without this filter and see if devices found
             filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
             registerReceiver(mReceiver, filter);
 
             //Start discovering nearby bluetooth devices
             mBlueAdapter.startDiscovery();
+
+            //Wait for initial thread to finish before restarting(made when attempted to connect to paired devices)
+            try {
+                mConnection.join();
+            } catch (InterruptedException e) {
+                Log.e("THREADS", "Something happened when calling mConnection.join() in MainActivity.java");        //Hardcoded error message
+            }
         });
 
         //TODO SCANNER HERE
@@ -288,11 +298,13 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     // discovery has finished, try to connect to all found devices
                     connectStatus.setText(R.string.checking_discoverable_devices);
+                    if(!mDeviceList.isEmpty()) {
+                        Log.d("MAIN", "mDeviceList IS NOT EMPTY!!!");
+                    }
                     mConnection = new ConnectThread(mDeviceList, myUUID, mHandler);
                     mConnection.start();
                     //Stop discovery
                     Log.d("BT", "Discovery cancelled properly");
-                    mDeviceList.clear();
                     mBlueAdapter.cancelDiscovery();
                     btButton.setEnabled(true);
                     //Unregister receiver
