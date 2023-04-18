@@ -348,9 +348,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     // discovery has finished, try to connect to all found devices
                     connectStatus.setText(R.string.checking_discoverable_devices);
-                    if(!mDeviceList.isEmpty()) {
-                        Log.d("MAIN", "mDeviceList IS NOT EMPTY!!!");
-                    }
                     mConnection = new ConnectThread(mDeviceList, myUUID, mHandler);
                     mConnection.start();
                     //Stop discovery
