@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -46,6 +47,15 @@ public class ConnectThread extends Thread {
                     // If successfully connected, do IO in separate thread.
                     myThread = new IOThread(mSocket);
                     myThread.start();
+                    //Add device as a bonded device
+                    BluetoothDevice connectedDevice = mSocket.getRemoteDevice();
+                    try {
+                        Method createBondMethod = BluetoothDevice.class.getMethod("createBond");
+                        createBondMethod.invoke(connectedDevice);
+                    }
+                    catch(Exception e) {
+                        Log.e("CONNECT", "Failed to add the device as a paired device: " + e.getMessage());
+                    }
                     while(running){}
                 } catch (IOException e) {
                     // Connection failed
