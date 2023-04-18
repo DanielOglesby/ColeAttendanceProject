@@ -210,7 +210,9 @@ public class MainActivity extends AppCompatActivity implements Serializable
 
             //Wait for initial thread to finish before restarting(made when attempted to connect to paired devices)
             try {
-                mConnection.join();
+                if(mConnection != null) {
+                    mConnection.join();
+                }
             } catch (InterruptedException e) {
                 Log.e("THREADS", "Something happened when calling mConnection.join() in MainActivity.java");        //Hardcoded error message
             }
