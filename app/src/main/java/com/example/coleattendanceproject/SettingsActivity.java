@@ -7,8 +7,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+
 public class SettingsActivity extends AppCompatActivity
 {
+    //String arraylist to be passed from MainActivity
+    private ArrayList<String> attendance;
+    private ArrayList<String> signIns;
+
     //When back button pressed, finish activity.
     @Override
     public void onBackPressed() {
@@ -20,6 +26,9 @@ public class SettingsActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        attendance = getIntent().getStringArrayListExtra("attendance");
+        signIns = getIntent().getStringArrayListExtra("signIns");
 
         Button clrAttend = (Button)findViewById(R.id.clr_attend);
         Button clrSigned = (Button)findViewById(R.id.clear_signed);
@@ -43,6 +52,7 @@ public class SettingsActivity extends AppCompatActivity
     //Clears the array of student IDs requested from Desktop application
     private void clearAttendanceBtn()
     {
+        attendance.clear();
         showToast("TODO: clear attendance String array (requested from Desktop via BT)");
     }
     //Clears the array of student IDs that have been signed in from the Mobile application

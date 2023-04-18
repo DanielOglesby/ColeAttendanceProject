@@ -75,9 +75,6 @@ public class BluetoothActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
 
-        //Save context passed from MainActivity
-        mainActivityContext = (Context) getIntent().getSerializableExtra("mainContext");
-
         // Get the saved UUID string value from SharedPreferences
         String uuidString = PreferenceManager.getDefaultSharedPreferences(mainActivityContext).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
         // If a valid UUID string is retrieved, update uuid

@@ -23,4 +23,6 @@
     <string name="checking_discoverable_devices">Checking discoverable devices. . .</string>
     <string name="click_the_icon_to_scan">Click the icon to scan</string>
     <string name="button_disabled_insufficient_permissions">Button disabled, insufficient permissions</string>
+    <string name="action_bluetooth">Bluetooth Settings</string>
+    <string name="disconnect_device">Disconnect Device</string>
 </resources>

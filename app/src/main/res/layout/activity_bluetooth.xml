@@ -45,17 +45,6 @@
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
     <Button
-        android:id="@+id/disconnectBT"
-        android:minWidth="300dp"
-        android:minHeight="75dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/disconnect_bluetooth"
-        android:textColor="?android:textColorPrimary"
-        android:layout_marginTop="16dp"
-        style="@style/Base.Widget.AppCompat.Button.Colored"/>
-
-    <Button
         android:id="@+id/setUUID"
         android:minWidth="300dp"
         android:minHeight="75dp"

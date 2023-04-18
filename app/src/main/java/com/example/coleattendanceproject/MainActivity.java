@@ -91,6 +91,10 @@ public class MainActivity extends AppCompatActivity implements Serializable
         }
     };
 
+    //Variables
+    ArrayList<String> attendance = new ArrayList<String>();
+    ArrayList<String> signIns = new ArrayList<String>();
+
     //TODO: Cleanup on app close
 
 
@@ -270,20 +274,32 @@ public class MainActivity extends AppCompatActivity implements Serializable
         //Menu selection
         switch(id)
         {
-            case R.id.action_settings:
-            {
-                startActivity(new  Intent(MainActivity.this, SettingsActivity.class));
+            case R.id.action_disconnect:
+                mConnection.stopThread();
+                //The following could be shrunken into a helper function
+                attendance.clear();
+                signIns.clear();
+                btButton.setEnabled(true);
+                btStatus.setText(R.string.click_the_icon_to_scan);
+                connectStatus.setText(R.string.currently_not_connected);
                 return true;
-            }
-            /* //TODO: Add this when free time
-            case R.id.bluetooth_settings:
+            case R.id.action_bluetooth:
             {
                 Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
-                intent.putExtra("mainContext", MainActivity.this);
-                //Pass it whatever else such as bluetooth components
                 startActivity(intent);
+                //Pass it whatever else such as bluetooth components
+                return true;
             }
-            */
+            case R.id.action_settings:
+            {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                //Pass attendance, and signIns for clearing if user desires
+                intent.putStringArrayListExtra("attendance", attendance);
+                intent.putStringArrayListExtra("signIns", signIns);
+                intent.putExtra("mConnection", (Serializable) mConnection);
+                startActivity(intent);
+                return true;
+            }
         }
 
         return false;
