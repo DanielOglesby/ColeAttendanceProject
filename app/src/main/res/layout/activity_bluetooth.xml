@@ -15,7 +15,7 @@
         android:text=""
         android:textAlignment="center"
         android:textSize="20sp"
-        android:textColor="#000"/>
+        android:textColor="?android:textColorPrimary"/>
 
     <ImageView
         android:id="@+id/bluetoothIv"
@@ -30,19 +30,8 @@
         android:text=""
         android:textAlignment="center"
         android:textSize="20sp"
-        android:textColor="#000"
+        android:textColor="?android:textColorPrimary"
         android:layout_marginTop="16dp" />
-
-    <Button
-        android:id="@+id/connectUUID"
-        android:minWidth="300dp"
-        android:minHeight="75dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/connect_to_device"
-        android:textColor="@color/black"
-        android:layout_marginTop="16dp"
-        style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
     <Button
         android:id="@+id/onBtn"
@@ -51,18 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/turn_on"
-        android:textColor="@color/black"
-        android:layout_marginTop="16dp"
-        style="@style/Base.Widget.AppCompat.Button.Colored"/>
-
-    <Button
-        android:id="@+id/disconnectBT"
-        android:minWidth="300dp"
-        android:minHeight="75dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/disconnect_bluetooth"
-        android:textColor="@color/black"
+        android:textColor="?android:textColorPrimary"
         android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
@@ -73,7 +51,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/change_uuid"
-        android:textColor="@color/black"
+        android:textColor="?android:textColorPrimary"
         android:layout_marginTop="16dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 

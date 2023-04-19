@@ -4,19 +4,12 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,109 +18,27 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class BluetoothActivity extends AppCompatActivity {
-
-    private static final int REQUEST_ENABLE_BT = 0;
-
+    private Context mainActivityContext;
     TextView mStatusBlueTv, mPairedTv, mUUID;
     ImageView mBlueIv;
-    Button mOnBtn, mConnectUUID, mChangeUUID;
+    Button mOnBtn, mChangeUUID;
 
     BluetoothAdapter mBlueAdapter;
 
     //Used to connect to desktop attendance app
     private UUID myUUID;
-    private BluetoothDevice mDevice;
-    private BluetoothSocket mSocket;
-    //Prevents connect to device button from
-    private boolean isDiscovering = false;
-
-
-    //Save list of discovered devices to check for UUIDs later
-    ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
-
-    //Make a receiver to handle discovery
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @SuppressLint("MissingPermission")
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
-                //Bluetooth device found
-                mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mDeviceList.add(mDevice);
-                //Logging found devices for testing
-                Log.d("DEVICE", "Found device: " + mDevice.getName() + " with MAC address " + mDevice.getAddress());
-            }
-            else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
-                // discovery has finished, give a call to fetchUuidsWithSdp on first device in list.
-                if (!mDeviceList.isEmpty()) {
-                    mDevice = mDeviceList.remove(0);
-                    mDevice.fetchUuidsWithSdp();
-                }
-            }
-            else if(BluetoothDevice.ACTION_UUID.equals(intent.getAction())) {
-                //BluetoothDevice extraDevice = intent.getParcelableExtra((BluetoothDevice.EXTRA_DEVICE));          //May be unnecessary TBD
-                Parcelable[] uuidList = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID);
-                if (uuidList != null) {
-                    for (Parcelable uuid : uuidList) {
-                        Log.d("BT_UUID", "Device: "+  mDevice.getName() + " with UUID: " + uuid.toString());
-                        if (uuid.toString().equals(myUUID.toString())) {
-                            Log.d("DEVICE", "FOUND MATCH");
-
-                            //Connect to device
-                            //UUID taken from (Taken from Teams Attendance App Docx)
-                            new ConnectThread(mDevice, myUUID);
-                            /*try {
-                                mSocket = mDevice.createRfcommSocketToServiceRecord(myUUID);
-                                mSocket.connect();
-                                showToast("Connection Successful");
-                                InputStream inputStream = mSocket.getInputStream();
-                                OutputStream outputStream = mSocket.getOutputStream();
-                                byte[] buffer = new byte[1024];
-                                int numBytes = inputStream.read(buffer);
-                                String receivedMessage = new String(buffer, 0, numBytes);
-                                outputStream.close();
-                                inputStream.close();
-                                //TODO:Request attendance sheet?
-                            }
-                            catch (IOException e) {
-                                showToast("Failed to connect");
-                            }*/
-                        }
-                    }
-                }
-                if (!mDeviceList.isEmpty()) {
-                    mDevice = mDeviceList.remove(0);
-                    mDevice.fetchUuidsWithSdp();
-                }
-                else {
-                    //Stop discovery
-                    mBlueAdapter.cancelDiscovery();
-                    mConnectUUID.setEnabled(true);
-                    isDiscovering = false;
-                    //Unregister receiver
-                    unregisterReceiver(mReceiver);
-                }
-            }
-        }
-    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -165,7 +76,7 @@ public class BluetoothActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bluetooth);
 
         // Get the saved UUID string value from SharedPreferences
-        String uuidString = PreferenceManager.getDefaultSharedPreferences(BluetoothActivity.this).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
+        String uuidString = PreferenceManager.getDefaultSharedPreferences(mainActivityContext).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
         // If a valid UUID string is retrieved, update uuid
         if (!uuidString.isEmpty()) {
             try {
@@ -180,9 +91,7 @@ public class BluetoothActivity extends AppCompatActivity {
         mStatusBlueTv   = findViewById(R.id.statusBluetoothTv);
         mPairedTv       = findViewById(R.id.pairedTv);
         mUUID           = findViewById(R.id.uuid);
-        mBlueIv         = findViewById(R.id.bluetoothIv);
         mOnBtn          = findViewById(R.id.onBtn);
-        mConnectUUID    = findViewById(R.id.connectUUID);
         mChangeUUID     = findViewById(R.id.setUUID);
 
         //adapter
@@ -191,7 +100,9 @@ public class BluetoothActivity extends AppCompatActivity {
         if (mBlueAdapter == null) {
             showToast("Bluetooth not supported");
             finish();
-        } else {
+        }
+        //Permission checks can be removed.
+        else {
             //Check permissions for dangerous permissions
             String[] permissions;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -243,35 +154,6 @@ public class BluetoothActivity extends AppCompatActivity {
                         }
                     });
 
-            //on btn connect to device(UUID) click
-            mConnectUUID.setOnClickListener(v -> {
-                if(isDiscovering) {
-                    return;     //Don't start discovery if already discovering
-                }
-
-                //Disable button until finished discovering
-                mConnectUUID.setEnabled(false);
-                isDiscovering = true;
-
-                //Turn on bluetooth if not on
-                if (!mBlueAdapter.isEnabled()) {
-                    //intent to on bluetooth
-                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    activityResultLauncher.launch(intent);
-                }
-
-                //Register the receiver to receive broadcasts
-                IntentFilter filter = new IntentFilter();
-                filter.addAction(BluetoothDevice.ACTION_FOUND);
-                filter.addAction(BluetoothDevice.ACTION_UUID);
-                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-                filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-                registerReceiver(mReceiver, filter);
-
-                //Start discovering nearby bluetooth devices
-                mBlueAdapter.startDiscovery();
-            });
-
             //on btn click
             mOnBtn.setOnClickListener(v -> {
                 if (!mBlueAdapter.isEnabled()) {
@@ -303,7 +185,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         mUUID.setText(myUUID.toString());
 
                         // Save the new UUID to SharedPreferences
-                        PreferenceManager.getDefaultSharedPreferences(BluetoothActivity.this).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
+                        PreferenceManager.getDefaultSharedPreferences(mainActivityContext).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
                     }
                     catch (IllegalArgumentException e) {
                         showToast("Invalid UUID input. Resetting. . .");
@@ -343,61 +225,6 @@ public class BluetoothActivity extends AppCompatActivity {
         }
 
         return false;
-    }
-
-    //Test Code
-    //private BluetoothSocket mSocket;
-    private Handler mHandler = new Handler();
-    // Connect to the Bluetooth device
-    private void connectToDevice(final BluetoothDevice device) {
-        new Thread(new Runnable() {
-            @SuppressLint("MissingPermission")
-            @Override
-            public void run() {
-                try {
-                    // Connect to the device
-                    mSocket = device.createRfcommSocketToServiceRecord(myUUID);
-                    mSocket.connect();
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Connection successful, update UI
-                            showToast("Connection Successful");
-                        }
-                    });
-
-                    // Perform data transfer...
-                } catch (IOException e) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Connection failed, update UI
-                            showToast("Failed to connect");
-                        }
-                    });
-                }
-            }
-        }).start();
-    }
-
-    //Helper code for bluetooth permissions
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        //More cases can be added for new menu item
-        switch (requestCode) {
-            case REQUEST_ENABLE_BT:
-                if(resultCode == RESULT_OK) {
-                    //bluetooth is on
-                    mBlueIv.setImageResource(R.drawable.ic_action_on);
-                    showToast("Bluetooth is on");
-                }
-                else {
-                    //user denied to turn bluetooth on
-                    showToast("couldn't turn on bluetooth");
-                }
-                break;
-        }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void setIcon()
