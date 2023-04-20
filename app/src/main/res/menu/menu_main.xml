@@ -7,10 +7,11 @@
         android:orderInCategory="100"
         android:title="@string/disconnect_device"
         app:showAsAction="never" />
+
     <item
-        android:id="@+id/action_bluetooth"
+        android:id="@+id/retry_paired"
         android:orderInCategory="100"
-        android:title="@string/action_bluetooth"
+        android:title="Reconnect"
         app:showAsAction="never" />
 
     <item
