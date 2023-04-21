@@ -71,6 +71,7 @@
         android:autofillHints="NetID"
         android:background="?attr/colorSecondaryVariant"
         android:ems="10"
+        android:maxLength="9"
         android:hint="@string/inputNetID"
         android:inputType="textMultiLine"
         android:imeOptions="actionSend"
