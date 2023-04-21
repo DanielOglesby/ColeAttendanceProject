@@ -9,20 +9,47 @@
     android:gravity="center_horizontal"
     tools:context=".SettingsActivity">
 
+    <TextView
+        android:id="@+id/uuid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
+        android:layout_marginTop="24dp" />
+
+    <TextView
+        android:id="@+id/attendNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
+        android:layout_marginTop="24dp" />
+
+    <TextView
+        android:id="@+id/signedInNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
+        android:layout_marginTop="24dp" />
+
     <Button
         android:id="@+id/clr_attend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="300dp"
         android:minHeight="75dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="72dp"
         android:background="@color/utd_orange"
         android:text="@string/clear_attendance_sheet"
         android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
     <Button
@@ -31,14 +58,22 @@
         android:layout_height="wrap_content"
         android:minWidth="300dp"
         android:minHeight="75dp"
-        android:layout_marginTop="100dp"
         android:background="@color/utd_orange"
         android:text="@string/clear_signed_in_students"
         android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/clr_attend"
+        android:layout_marginTop="72dp"
+        style="@style/Base.Widget.AppCompat.Button.Colored"/>
+
+    <Button
+        android:id="@+id/setUUID"
+        android:minWidth="300dp"
+        android:minHeight="75dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/change_uuid"
+        android:textColor="?android:textColorPrimary"
+        android:layout_marginTop="72dp"
         style="@style/Base.Widget.AppCompat.Button.Colored"/>
 
 </LinearLayout>
