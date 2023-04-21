@@ -239,11 +239,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
 
             }
         });
-
-        //String for attendance sheet from Attend.exe
-        //String for sign-ins made from mobile attendance app
-        //Use editText for newline
-        //mConnection.write();      //Use this to write to Attend.exe   parameter should take a string
     }
 
     private void myFunction() {

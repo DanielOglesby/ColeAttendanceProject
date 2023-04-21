@@ -55,7 +55,7 @@ public class ConnectThread extends Thread{
                     catch(Exception e) {
                         Log.e("CONNECT", "Failed to add the device as a paired device: " + e.getMessage());
                     }
-                    while(running){}
+                    break;
                 } catch (IOException e) {
                     // Connection failed
                     mHandler.sendEmptyMessage(FAILED);
@@ -67,6 +67,7 @@ public class ConnectThread extends Thread{
                 }
             }
         }
+        while(running){}
         mHandler.sendEmptyMessage(FINISHED);
         mDeviceList.clear();
     }
