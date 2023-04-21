@@ -5,13 +5,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class ConnectThread extends Thread {
+public class ConnectThread extends Thread{
     //Variables
     private final ArrayList<BluetoothDevice> mDeviceList;
     private BluetoothSocket mSocket;

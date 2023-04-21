@@ -29,11 +29,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--Bluetooth Activity-->
-        <activity
-            android:name="com.example.coleattendanceproject.BluetoothActivity"
-            android:label="@string/app_name">
-        </activity>
+        <!--Settings Activity-->
         <activity
             android:name="com.example.coleattendanceproject.SettingsActivity"
             android:label="@string/app_name">
