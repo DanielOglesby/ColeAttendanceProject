@@ -225,7 +225,9 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 if (s.toString().contains("\n")) {
                     //Write to Attend.exe (TODO: add checks before writing)
                     Log.d("IO", "EditText: " + editText.getText().toString());
-                    mConnection.write(editText.getText().toString());
+                    if(mConnection != null) {
+                        mConnection.write(editText.getText().toString());
+                    }
                     //Clear editText
                     editText.setText("");
                 }

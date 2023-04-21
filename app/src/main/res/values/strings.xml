@@ -9,7 +9,7 @@
     <string name="bluetooth_not_available">Bluetooth is not available</string>
     <string name="bluetooth_available">Bluetooth is available</string>
     <string name="defaultMsg">(Success/Failed)</string>
-    <string name="inputNetID">NetID here</string>
+    <string name="inputCardID">Card ID here</string>
     <string name="sign_in">Sign-in</string>
     <string name="bluetooth_icon">Bluetooth Icon</string>
     <string name="clear_attendance_sheet">Clear attendance sheet</string>
