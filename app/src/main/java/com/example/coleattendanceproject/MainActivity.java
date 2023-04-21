@@ -124,8 +124,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 });
 
         // Get the saved UUID string value from SharedPreferences
-        String uuidString = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
-        btPermissions = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("PERMISSIONS", false);
+        String uuidString = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
+        btPermissions = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getBoolean("PERMISSIONS", false);
         // If a valid UUID string is retrieved, update uuid
         if (!uuidString.isEmpty()) {
             try {
@@ -172,7 +172,15 @@ public class MainActivity extends AppCompatActivity implements Serializable
             if (!permissionsToRequest.isEmpty()) {
                 ActivityCompat.requestPermissions(MainActivity.this, permissionsToRequest.toArray(new String[0]), 2);
             } else {
-                connectPaired();
+                btStatus.setText("");
+                Set<BluetoothDevice> pairedDevices = mBlueAdapter.getBondedDevices();
+                if(pairedDevices.size() > 0) {
+                    mDeviceList.addAll(pairedDevices);
+                }
+                btButton.setEnabled(false);
+                connectStatus.setText(R.string.checking_paired_devices);
+                mConnection = new ConnectThread(mDeviceList, myUUID, mHandler);
+                mConnection.start();
             }
         }
 
@@ -210,7 +218,14 @@ public class MainActivity extends AppCompatActivity implements Serializable
             }
         });
 
-        //Scanner to write to Attend.exe
+        //TODO SCANNER HERE
+        editText.setOnEditorActionListener((textView, keyCode, keyEvent) -> {
+            if (false) {
+                //mConnection.write(editText.getText().toString());
+                return true;
+            }
+        return false;
+    });
         EditText editText = findViewById(R.id.editText);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -223,11 +238,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 // This method is called when the text is changed.
                 // runs myFunction method when newline is encountered
                 if (s.toString().contains("\n")) {
-                    //Write to Attend.exe (TODO: add checks before writing)
-                    Log.d("IO", "EditText: " + editText.getText().toString());
-                    mConnection.write(editText.getText().toString());
-                    //Clear editText
-                    editText.setText("");
+                    myFunction();
+                    Log.d("TESTING","This is the on text changed");
                 }
             }
             @Override
@@ -265,7 +277,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
         switch(id)
         {
             case R.id.action_disconnect:
-            {
                 mConnection.stopThread();
                 //The following could be shrunken into a helper function
                 attendance.clear();
@@ -274,15 +285,11 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 btStatus.setText(R.string.click_the_icon_to_scan);
                 connectStatus.setText(R.string.currently_not_connected);
                 return true;
-            }
-            case R.id.retry_paired:
+            case R.id.action_bluetooth:
             {
-                if(!connectStatus.getText().toString().equals("Connected!")) {
-                    connectPaired();
-                }
-                else {
-                    showToast("Already connected!");
-                }
+                Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                startActivity(intent);
+                //Pass it whatever else such as bluetooth components
                 return true;
             }
             case R.id.action_settings:
@@ -291,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 //Pass attendance, and signIns for clearing if user desires
                 intent.putStringArrayListExtra("attendance", attendance);
                 intent.putStringArrayListExtra("signIns", signIns);
+                intent.putExtra("mConnection", (Serializable) mConnection);
                 startActivity(intent);
                 return true;
             }
@@ -320,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 btStatus.setText(R.string.button_disabled_insufficient_permissions);
                 showToast("Missing permissions for bluetooth functionality.");
             }
-            PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("PERMISSIONS", btPermissions).apply();
+            PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putBoolean("PERMISSIONS", btPermissions).apply();
         }
     }
 
@@ -353,19 +361,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 }
             }
         };
-
-    private void connectPaired() {
-        btStatus.setText("");
-        @SuppressLint("MissingPermission") Set<BluetoothDevice> pairedDevices = mBlueAdapter.getBondedDevices();
-        if(pairedDevices.size() > 0) {
-            mDeviceList.addAll(pairedDevices);
-        }
-        btButton.setEnabled(false);
-        editText.setEnabled(false);
-        connectStatus.setText(R.string.checking_paired_devices);
-        mConnection = new ConnectThread(mDeviceList, myUUID, mHandler);
-        mConnection.start();
-    }
 
     private void setIcon()
     {
