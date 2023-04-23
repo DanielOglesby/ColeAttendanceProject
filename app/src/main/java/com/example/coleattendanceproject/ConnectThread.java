@@ -73,7 +73,9 @@ public class ConnectThread extends Thread{
     }
 
     //Get attendance from Attend.exe (TODO: return string?)
-    public void getAttendance() {myThread.getAttendance();}
+    public String getAttendance() {myThread.getAttendance();
+        return null;
+    }
 
     //Get incoming messages
     public String getMessages() {return myThread.getMessages();}

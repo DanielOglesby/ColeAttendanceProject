@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     editText.setEnabled(true);
                     mConnection.getAttendance();
                     Log.d("IO", "Messages: " + mConnection.getMessages());
+                    attendanceList();
                     break;
                 case ERROR:
                     // Connection failed, do something
@@ -94,6 +96,10 @@ public class MainActivity extends AppCompatActivity implements Serializable
     //Variables
     ArrayList<String> attendance = new ArrayList<String>();     //Taken from Attend.exe
     ArrayList<String> signIns = new ArrayList<String>();        //Saved when a student swipes card on phone
+
+
+
+
 
     //TODO: Cleanup on app close
 
@@ -239,6 +245,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
 
             }
         });
+
+
     }
 
     private void myFunction() {
@@ -373,6 +381,26 @@ public class MainActivity extends AppCompatActivity implements Serializable
             btButton.setImageResource(R.drawable.ic_action_off);
         }
     }
+    //Add the attendance onto arraylist
+    public void attendanceList() {
+
+        mConnection.getAttendance();
+        String[] messagesArray = mConnection.getMessages().split("\n");
+
+        for (String message : messagesArray) {
+            // Check if the message contains an asterisk
+            if (message.contains("*")) {
+                // Stop adding messages to the attendance list
+                break;
+            }
+            attendance.add(message);
+        }
+        Log.d("IO", "IDs in ArrayList: " + attendance);
+    }
+
+
+
+
 
     //toast message helper function
     private void showToast(String msg) {

@@ -15,6 +15,8 @@ public class IOThread extends Thread {
     //Used to stop thread in case of no connection being made.
     private volatile boolean running = true;
 
+    private boolean messageReceived = false;
+
     public IOThread(BluetoothSocket socket) {
         //Getting input/output from connection
         mSocket = socket;
@@ -45,6 +47,9 @@ public class IOThread extends Thread {
                 String message = new String (buffer, 0, bytes);
                 Log.d("IO", "Incoming message: " + message);
                 incomingMessages.append(message);
+                if (message.endsWith("\n")){
+                    messageReceived = true;
+                }
             } catch (IOException e) {
                 Log.e("IO", "Error receiving message");
                 break;
@@ -53,7 +58,7 @@ public class IOThread extends Thread {
     }
 
     //Write to Attend.exe
-    public void write(String scanner) {
+    public String write(String scanner) {
         byte[] buffer = scanner.getBytes();
         try {
             oStream.write(buffer);
@@ -62,12 +67,26 @@ public class IOThread extends Thread {
         catch (IOException e) {
             Log.e("IO", "Error sending message");
         }
+        return scanner;
     }
 
-    //Get attendance sheet from Attend.exe (TODO: still needs to return string)
-    public void getAttendance() {
+    //Get attendance sheet from Attend.exe
+    public String getAttendance() {
         incomingMessages.setLength(0);      //Clear any previous messages
+        messageReceived = false;
+
         this.write("*ID*");
+        while (!messageReceived) {
+            try {
+                Thread.sleep(100); // Sleep for a short time to avoid busy waiting
+            } catch (InterruptedException e) {
+                Log.e("IO", "Thread interrupted while waiting for message");
+            }
+        }
+        //Log.d("IO", "String of IDs: " + incomingMessages.toString());
+        return incomingMessages.toString();
+
+
     }
 
     //Get incoming messages
