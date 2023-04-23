@@ -88,6 +88,12 @@ public class ConnectThread extends Thread{
         catch (NullPointerException e) {
             Log.e("CONNECT", "No existing IOThread myThread.");
         }
+        try {
+            mSocket.close();
+        }
+        catch(IOException e) {
+            Log.e("CONNECT", "Socket could not be closed.");
+        }
         running = false;
     }
 }

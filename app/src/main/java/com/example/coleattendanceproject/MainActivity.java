@@ -92,8 +92,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
     };
 
     //Variables
-    ArrayList<String> attendance = new ArrayList<String>();
-    ArrayList<String> signIns = new ArrayList<String>();
+    ArrayList<String> attendance = new ArrayList<String>();     //Taken from Attend.exe
+    ArrayList<String> signIns = new ArrayList<String>();        //Saved when a student swipes card on phone
 
     //TODO: Cleanup on app close
 
