@@ -88,6 +88,7 @@ public class ConnectThread extends Thread{
 
     //Write to Attend.exe
     public void write(String scanner) {myThread.write(scanner);}
+
     //Close all sockets and streams as well as close thread
     public void stopThread() {
         try {

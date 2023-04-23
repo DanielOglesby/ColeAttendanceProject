@@ -8,7 +8,9 @@
     <string name="get_paired_devices">Get Paired Devices</string>
     <string name="bluetooth_not_available">Bluetooth is not available</string>
     <string name="bluetooth_available">Bluetooth is available</string>
-    <string name="defaultMsg">(Success/Failed)</string>
+    <string name="success">Success!</string>
+    <string name="missing">Not in attendance!</string>
+    <string name="duplicate">Duplicate sign-in!</string>
     <string name="inputCardID">Card ID here</string>
     <string name="sign_in">Sign-in</string>
     <string name="bluetooth_icon">Bluetooth Icon</string>

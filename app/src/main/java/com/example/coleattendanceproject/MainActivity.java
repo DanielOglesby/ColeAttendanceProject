@@ -26,7 +26,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -105,8 +104,16 @@ public class MainActivity extends AppCompatActivity implements Serializable
     ArrayList<String> signIns = new ArrayList<String>();        //Saved when a student swipes card on phone
 
 
-    //TODO: Cleanup on app close
-
+    //Cleanup on app closing
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //Close connections
+        mConnection.stopThread();
+        //Clear important information
+        attendance.clear();
+        signIns.clear();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -244,13 +251,15 @@ public class MainActivity extends AppCompatActivity implements Serializable
                             if(!signIns.contains(current)) {
                                 mConnection.write(current);     //In attendance and not a duplicate. Sign-in to attend.exe
                                 signIns.add(current);           //Not a duplicate, add to list of signIns
-                                textView.setText("Success!");
+                                textView.setText(R.string.success);
                             }
                             else {
-                                textView.setText("Duplicate sign-in!");
+                                //Duplicate sign-in
+                                textView.setText(R.string.sign_in);
                             }
                         } else {
-                            textView.setText("Not in attendance!");
+                            //Student not part of attendance sheet
+                            textView.setText(R.string.missing);
                         }
 
                     }
