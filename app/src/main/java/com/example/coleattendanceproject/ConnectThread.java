@@ -18,8 +18,8 @@ public class ConnectThread extends Thread{
     private IOThread myThread;
     //Status codes for handler
     private static final int CONNECTED = 1;
-    private static final int FAILED = 2;
-    private static final int FINISHED = 3;
+    private static final int FAILED = 3;
+    private static final int FINISHED = 4;
     private final Handler mHandler;
     //Used to stop thread in case of no connection being made.
     private volatile boolean running = true;
@@ -44,7 +44,7 @@ public class ConnectThread extends Thread{
                     // Connection successful
                     mHandler.sendEmptyMessage(CONNECTED);
                     // If successfully connected, do IO in separate thread.
-                    myThread = new IOThread(mSocket);
+                    myThread = new IOThread(mSocket, mHandler);
                     myThread.start();
                     //Add device as a bonded device
                     BluetoothDevice connectedDevice = mSocket.getRemoteDevice();
@@ -67,15 +67,21 @@ public class ConnectThread extends Thread{
                 }
             }
         }
-        while(running){}
-        mHandler.sendEmptyMessage(FINISHED);
+        if(myThread == null) {
+            mHandler.sendEmptyMessage(FINISHED);
+        }
+        //Keeps thread running (may not be needed)
+        while(running){
+            if(!mSocket.isConnected()) {
+                mHandler.sendEmptyMessage(FAILED);
+                mHandler.sendEmptyMessage(FINISHED);
+            }
+        }
         mDeviceList.clear();
     }
 
-    //Get attendance from Attend.exe (TODO: return string?)
-    public String getAttendance() {myThread.getAttendance();
-        return null;
-    }
+    //Get attendance from Attend.exe
+    public void getAttendance() {myThread.getAttendance();}
 
     //Get incoming messages
     public String getMessages() {return myThread.getMessages();}

@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
     TextView textView;
     TextView btStatus, connectStatus;
     ImageView btButton;
-    //Test Button
-    Button testBtn;
 
     //Bluetooth components
     private BluetoothAdapter mBlueAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -58,35 +56,46 @@ public class MainActivity extends AppCompatActivity implements Serializable
     private ConnectThread mConnection;
     //Status codes for handler
     private static final int CONNECTED = 1;
-    private static final int ERROR = 2;
-    private static final int FINISHED = 3;
+    private static final int ATTENDANCE = 2;
+    private static final int ERROR = 3;
+    private static final int FINISHED = 4;
     private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
-                case CONNECTED:
+                case CONNECTED: {
                     // Connection successful, do something
                     Log.d("BT", "Connection successful!");
                     connectStatus.setText(R.string.connected);
-                    editText.setEnabled(true);
+                    textView.setText(R.string.waiting_for_attendance);
                     mConnection.getAttendance();
-                    Log.d("IO", "Messages: " + mConnection.getMessages());
-                    attendanceList();
                     break;
-                case ERROR:
+                }
+                case ATTENDANCE: {
+                    attendanceList();
+                    textView.setText(R.string.ready_to_swipe);
+                    editText.setEnabled(true);
+                    break;
+                }
+                case ERROR: {
                     // Connection failed, do something
+                    textView.setText(R.string.not_connected);
                     Log.e("BT", "Connection failed");
                     editText.setEnabled(false);
                     break;
-                case FINISHED:
+                }
+                case FINISHED: {
                     mConnection.stopThread();
                     btButton.setEnabled(true);
+                    textView.setText("");
                     btStatus.setText(R.string.click_the_icon_to_scan);
                     connectStatus.setText(R.string.currently_not_connected);
                     break;
-                default:
+                }
+                default: {
                     super.handleMessage(msg);
                     break;
+                }
             }
         }
     };
@@ -94,9 +103,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
     //Variables
     ArrayList<String> attendance = new ArrayList<String>();         //Taken from Attend.exe
     ArrayList<String> signIns = new ArrayList<String>();        //Saved when a student swipes card on phone
-
-
-
 
 
     //TODO: Cleanup on app close
@@ -197,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
             //Register the receiver to receive broadcasts
             IntentFilter filter = new IntentFilter();
             filter.addAction(BluetoothDevice.ACTION_FOUND);
-            //filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);        //May not be needed. TODO: Test without this filter and see if devices found
             filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
             registerReceiver(mReceiver, filter);
 
@@ -227,12 +232,30 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 // This method is called when the text is changed.
                 // runs myFunction method when newline is encountered
                 if (s.toString().contains("\n")) {
-                    //Write to Attend.exe (TODO: add checks before writing)
+                    //Write to Attend.exe
                     Log.d("IO", "EditText: " + editText.getText().toString());
+                    String current = editText.getText().toString();
+                    editText.setEnabled(false);     //Temporarily disable editText to prevent swipes on top of most recent swipe (NOTE: May not be necessary)
+                    //If for whatever reason app is not connected, do not try to write.
                     if(mConnection != null) {
-                        mConnection.write(editText.getText().toString());
+                        //Check attendance list with card swipe
+                        if(attendance.contains(current)) {
+                            //Check for duplicate swipes
+                            if(!signIns.contains(current)) {
+                                mConnection.write(current);     //In attendance and not a duplicate. Sign-in to attend.exe
+                                signIns.add(current);           //Not a duplicate, add to list of signIns
+                                textView.setText("Success!");
+                            }
+                            else {
+                                textView.setText("Duplicate sign-in!");
+                            }
+                        } else {
+                            textView.setText("Not in attendance!");
+                        }
+
                     }
-                    //Clear editText
+                    //Re-enable editText and clear editText
+                    editText.setEnabled(true);
                     editText.setText("");
                 }
             }
@@ -247,10 +270,6 @@ public class MainActivity extends AppCompatActivity implements Serializable
 
     }
 
-    private void myFunction() {
-        //This method runs when newline is encountered in editText
-    }
-
     //Settings menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -259,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
         return true;
     }
 
-    //TODO: Add menu selection to move to BluetoothActivity (need to adjust xmls)
+    //Button press action for settings menu
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -302,6 +321,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
         return false;
     }
 
+    //Messages if a permission is denied
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -357,6 +377,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
             }
         };
 
+    //Try to connect to already bonded devices
     private void connectPaired() {
         btStatus.setText("");
         @SuppressLint("MissingPermission") Set<BluetoothDevice> pairedDevices = mBlueAdapter.getBondedDevices();
@@ -370,6 +391,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
         mConnection.start();
     }
 
+    //Set icon for bluetooth status
     private void setIcon()
     {
         //set image according to bluetooth status (on/off)
@@ -381,24 +403,17 @@ public class MainActivity extends AppCompatActivity implements Serializable
     }
     //Add the attendance onto arraylist
     public void attendanceList() {
-
-        mConnection.getAttendance();
         String[] messagesArray = mConnection.getMessages().split("\n");
 
         for (String message : messagesArray) {
-            // Check if the message contains an asterisk
-            if (message.contains("*")) {
-                // Stop adding messages to the attendance list
+            //End of attendance list
+            if(message.equals("*")) {
                 break;
             }
             attendance.add(message);
         }
         Log.d("IO", "IDs in ArrayList: " + attendance);
     }
-
-
-
-
 
     //toast message helper function
     private void showToast(String msg) {

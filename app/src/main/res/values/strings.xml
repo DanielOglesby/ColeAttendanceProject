@@ -25,4 +25,7 @@
     <string name="button_disabled_insufficient_permissions">Button disabled, insufficient permissions</string>
     <string name="action_bluetooth">Bluetooth Settings</string>
     <string name="disconnect_device">Disconnect Device</string>
+    <string name="not_connected">Not connected!</string>
+    <string name="waiting_for_attendance">Waiting for Attendance!</string>
+    <string name="ready_to_swipe">Ready to swipe!</string>
 </resources>

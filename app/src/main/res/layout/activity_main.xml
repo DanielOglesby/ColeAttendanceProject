@@ -54,14 +54,14 @@
         style="@style/Theme.ColeAttendanceProject"
         android:layout_width="300dp"
         android:layout_height="48dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginBottom="64dp"
         android:background="?attr/colorPrimaryVariant"
         android:ems="10"
-        android:text="@string/defaultMsg"
+        android:text="@string/ready_to_swipe"
         android:textAlignment="center"
         android:textColor="@color/white"
-        android:textSize="20sp"
-        android:layout_marginTop="64dp"
-        android:layout_marginBottom="64dp" />
+        android:textSize="20sp" />
 
     <EditText
         android:id="@+id/editText"

@@ -1,6 +1,7 @@
 package com.example.coleattendanceproject;
 
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,15 +12,16 @@ public class IOThread extends Thread {
     private final BluetoothSocket mSocket;
     private final InputStream iStream;
     private final OutputStream oStream;
-    private StringBuilder incomingMessages = new StringBuilder();
+    private final StringBuilder incomingMessages = new StringBuilder();
+    private static final int ATTENDANCE = 2;
+    private final Handler mHandler;
     //Used to stop thread in case of no connection being made.
     private volatile boolean running = true;
 
-    private boolean messageReceived = false;
-
-    public IOThread(BluetoothSocket socket) {
+    public IOThread(BluetoothSocket socket, Handler handler) {
         //Getting input/output from connection
         mSocket = socket;
+        mHandler = handler;
         InputStream testIn = null;
         OutputStream testOut = null;
         try{
@@ -45,10 +47,12 @@ public class IOThread extends Thread {
             try {
                 bytes = iStream.read(buffer);
                 String message = new String (buffer, 0, bytes);
-                Log.d("IO", "Incoming message: " + message);
+                if(!message.contains("\n")) {
+                    Log.d("IO", "Incoming message: " + message);
+                }
                 incomingMessages.append(message);
-                if (message.endsWith("\n")){
-                    messageReceived = true;
+                if (message.endsWith("*")){
+                    mHandler.sendEmptyMessage(ATTENDANCE);
                 }
             } catch (IOException e) {
                 Log.e("IO", "Error receiving message");
@@ -58,7 +62,7 @@ public class IOThread extends Thread {
     }
 
     //Write to Attend.exe
-    public String write(String scanner) {
+    public void write(String scanner) {
         byte[] buffer = scanner.getBytes();
         try {
             oStream.write(buffer);
@@ -67,26 +71,12 @@ public class IOThread extends Thread {
         catch (IOException e) {
             Log.e("IO", "Error sending message");
         }
-        return scanner;
     }
 
     //Get attendance sheet from Attend.exe
-    public String getAttendance() {
+    public void getAttendance() {
         incomingMessages.setLength(0);      //Clear any previous messages
-        messageReceived = false;
-
-        this.write("*ID*");
-        while (!messageReceived) {
-            try {
-                Thread.sleep(100); // Sleep for a short time to avoid busy waiting
-            } catch (InterruptedException e) {
-                Log.e("IO", "Thread interrupted while waiting for message");
-            }
-        }
-        //Log.d("IO", "String of IDs: " + incomingMessages.toString());
-        return incomingMessages.toString();
-
-
+        this.write("*ID*");         //Request attendance list
     }
 
     //Get incoming messages
