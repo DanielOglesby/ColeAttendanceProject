@@ -1,15 +1,11 @@
 package com.example.coleattendanceproject;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
@@ -47,7 +43,7 @@ public class SettingsActivity extends AppCompatActivity
         Button changeUUID = (Button)findViewById(R.id.setUUID);
 
         // Get the saved UUID string value from SharedPreferences
-        String uuidString = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
+        String uuidString = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
         // If a valid UUID string is retrieved, update uuid
         if (!uuidString.isEmpty()) {
             try {
@@ -89,7 +85,7 @@ public class SettingsActivity extends AppCompatActivity
                     uuid.setText(myUUID.toString());
 
                     // Save the new UUID to SharedPreferences
-                    PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
+                    androidx.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("UUID_KEY", (myText.getText().toString())).apply();
                 } catch (IllegalArgumentException e) {
                     // Handle the case where the saved string is not a valid UUID
                     myUUID = UUID.fromString("e0cbf06c-cd8b-4647-bb8a-263b43f0f974");

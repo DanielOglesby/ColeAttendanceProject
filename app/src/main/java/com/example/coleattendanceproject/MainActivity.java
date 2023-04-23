@@ -21,7 +21,6 @@ import androidx.core.content.ContextCompat;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -34,7 +33,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -94,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
     };
 
     //Variables
-    ArrayList<String> attendance = new ArrayList<String>();     //Taken from Attend.exe
+    ArrayList<String> attendance = new ArrayList<String>();         //Taken from Attend.exe
     ArrayList<String> signIns = new ArrayList<String>();        //Saved when a student swipes card on phone
 
 
@@ -130,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 });
 
         // Get the saved UUID string value from SharedPreferences
-        String uuidString = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
-        btPermissions = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("PERMISSIONS", false);
+        String uuidString = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
+        btPermissions = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("PERMISSIONS", false);
         // If a valid UUID string is retrieved, update uuid
         if (!uuidString.isEmpty()) {
             try {
@@ -325,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 btStatus.setText(R.string.button_disabled_insufficient_permissions);
                 showToast("Missing permissions for bluetooth functionality.");
             }
-            PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("PERMISSIONS", btPermissions).apply();
+            androidx.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("PERMISSIONS", btPermissions).apply();
         }
     }
 
