@@ -2,7 +2,6 @@ package com.example.coleattendanceproject;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -58,6 +57,11 @@ public class MainActivity extends AppCompatActivity implements Serializable
     private static final int ATTENDANCE = 2;
     private static final int ERROR = 3;
     private static final int FINISHED = 4;
+    //Result codes for ActivityResultLauncher
+    public static final int ATTEND_CODE = 1;
+    public static final int SIGN_CODE = 2;
+    public static final int CLEAR_CODE = 3;
+
     private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -132,10 +136,10 @@ public class MainActivity extends AppCompatActivity implements Serializable
         setIcon();
 
         //Result launcher to replace deprecated startActivityForResult call
-        ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+        ActivityResultLauncher<Intent> btLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getResultCode() == RESULT_OK) {
                         setIcon();      //Changes bluetooth icon to status of bluetooth
                     }
                 });
@@ -204,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
             if (!mBlueAdapter.isEnabled()) {
                 //intent to on bluetooth
                 Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                activityResultLauncher.launch(intent);
+                btLauncher.launch(intent);
             }
 
             //Register the receiver to receive broadcasts
@@ -242,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     //Write to Attend.exe
                     Log.d("IO", "EditText: " + editText.getText().toString());
                     String current = editText.getText().toString();
+                    Log.d("IO", "String: " + current);
                     editText.setEnabled(false);     //Temporarily disable editText to prevent swipes on top of most recent swipe (NOTE: May not be necessary)
                     //If for whatever reason app is not connected, do not try to write.
                     if(mConnection != null) {
@@ -278,6 +283,22 @@ public class MainActivity extends AppCompatActivity implements Serializable
 
 
     }
+
+    //Result launcher to replace deprecated startActivityForResult call
+    ActivityResultLauncher<Intent> settingsLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == ATTEND_CODE) {
+                    attendance.clear();
+                }
+                else if (result.getResultCode() == SIGN_CODE) {
+                    signIns.clear();
+                }
+                else if (result.getResultCode() == CLEAR_CODE) {
+                    attendance.clear();
+                    signIns.clear();
+                }
+            });
 
     //Settings menu
     @Override
@@ -322,11 +343,10 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 //Pass attendance, and signIns for clearing if user desires
                 intent.putStringArrayListExtra("attendance", attendance);
                 intent.putStringArrayListExtra("signIns", signIns);
-                startActivity(intent);
+                settingsLauncher.launch(intent);
                 return true;
             }
         }
-
         return false;
     }
 

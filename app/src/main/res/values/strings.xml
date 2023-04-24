@@ -30,4 +30,6 @@
     <string name="not_connected">Not connected!</string>
     <string name="waiting_for_attendance">Waiting for Attendance!</string>
     <string name="ready_to_swipe">Ready to swipe!</string>
+    <string name="number_of_students">"Number of students: %d"</string>
+    <string name="number_of_sign_ins">"Number of sign-ins: %d"</string>
 </resources>

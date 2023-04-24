@@ -1,5 +1,6 @@
 package com.example.coleattendanceproject;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +14,13 @@ import java.util.UUID;
 
 public class SettingsActivity extends AppCompatActivity
 {
+    //Result codes for ActivityResultLauncher
+    public static final int ATTEND_CODE = 1;
+    public static final int SIGN_CODE = 2;
+    public static final int CLEAR_CODE = 3;
+    //Boolean to determine what was cleared
+    public boolean attendCleared = false;
+    public boolean signCleared = false;
     //String arraylist to be passed from MainActivity
     private ArrayList<String> attendance;
     private ArrayList<String> signIns;
@@ -22,6 +30,16 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        Intent intent = new Intent();
+        if(attendCleared && signCleared) {
+            setResult(CLEAR_CODE, intent);
+        }
+        else if(attendCleared && !signCleared) {
+            setResult(ATTEND_CODE, intent);
+        }
+        else if (!attendCleared && signCleared) {
+            setResult(SIGN_CODE, intent);
+        }
         this.finish();
     }
     @Override
@@ -58,14 +76,27 @@ public class SettingsActivity extends AppCompatActivity
         //Set text to uuid
         uuid.setText(myUUID.toString());
         //Set text to number of students in attendance sheet
-        attendNum.setText("Number of students: " + attendance.size());
+        attendNum.setText(String.format(getString(R.string.number_of_students), attendance.size()));
         //Set text to number of signed in students
-        signNum.setText("Number of sign-ins: " + signIns.size());
+        signNum.setText(String.format(getString(R.string.number_of_sign_ins), signIns.size()));
 
         //Clear attendance sheet on button press
-        clrAttend.setOnClickListener(v -> clearAttendanceBtn());
+        clrAttend.setOnClickListener(v ->
+                {
+                    clearAttendanceBtn();
+                    //Set text to number of students in attendance sheet
+                    attendNum.setText(String.format(getString(R.string.number_of_students), attendance.size()));
+                    attendCleared = true;
+                });
         //Clear student sign-ins on button press
-        clrSigned.setOnClickListener(v -> clearStudentsBtn());
+        clrSigned.setOnClickListener(v ->
+                {
+                    clearStudentsBtn();
+                    //Set text to number of signed in students
+                    signNum.setText(String.format(getString(R.string.number_of_sign_ins), signIns.size()));
+                    signCleared = true;
+                }
+                );
 
         //Change uuid on button click
         changeUUID.setOnClickListener(v -> {
