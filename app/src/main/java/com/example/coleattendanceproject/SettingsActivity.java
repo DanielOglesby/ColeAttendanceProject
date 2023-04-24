@@ -26,22 +26,23 @@ public class SettingsActivity extends AppCompatActivity
     private ArrayList<String> signIns;
     //Used to connect to desktop attendance app
     private UUID myUUID;
+
     //When back button pressed, finish activity.
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent();
+        Intent resultIntent = new Intent();
         if(attendCleared && signCleared) {
-            setResult(CLEAR_CODE, intent);
+            setResult(CLEAR_CODE, resultIntent);
         }
         else if(attendCleared && !signCleared) {
-            setResult(ATTEND_CODE, intent);
+            setResult(ATTEND_CODE, resultIntent);
         }
         else if (!attendCleared && signCleared) {
-            setResult(SIGN_CODE, intent);
+            setResult(SIGN_CODE, resultIntent);
         }
-        this.finish();
+        super.onBackPressed();
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -86,7 +87,6 @@ public class SettingsActivity extends AppCompatActivity
                     clearAttendanceBtn();
                     //Set text to number of students in attendance sheet
                     attendNum.setText(String.format(getString(R.string.number_of_students), attendance.size()));
-                    attendCleared = true;
                 });
         //Clear student sign-ins on button press
         clrSigned.setOnClickListener(v ->
@@ -94,7 +94,6 @@ public class SettingsActivity extends AppCompatActivity
                     clearStudentsBtn();
                     //Set text to number of signed in students
                     signNum.setText(String.format(getString(R.string.number_of_sign_ins), signIns.size()));
-                    signCleared = true;
                 }
                 );
 
@@ -138,10 +137,12 @@ public class SettingsActivity extends AppCompatActivity
     {
         //Consider passing mConnection and disconnecting if button is pressed OR grabbing new attendance sheet?
         attendance.clear();
+        attendCleared = true;
     }
     //Clears the array of student IDs that have been signed in from the Mobile application
     private void clearStudentsBtn()
     {
         signIns.clear();
+        signCleared = true;
     }
 }

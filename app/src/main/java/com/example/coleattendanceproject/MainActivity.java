@@ -111,12 +111,12 @@ public class MainActivity extends AppCompatActivity implements Serializable
     //Cleanup on app closing
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         //Close connections
         mConnection.stopThread();
         //Clear important information
         attendance.clear();
         signIns.clear();
+        super.onDestroy();
     }
 
     @Override
@@ -288,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
     ActivityResultLauncher<Intent> settingsLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
+                Log.d("SETTINGS", "Result Code: " + result.getResultCode());
                 if (result.getResultCode() == ATTEND_CODE) {
                     attendance.clear();
                 }
