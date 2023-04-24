@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -14,9 +15,12 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -54,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
     private ConnectThread mConnection;
     //Status codes for handler
     private static final int CONNECTED = 1;
-    private static final int IOMADE = 2;
+    private static final int IO_MADE = 2;
     private static final int ATTENDANCE = 3;
     private static final int ERROR = 4;
     private static final int FINISHED = 5;
@@ -73,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     connectStatus.setText(R.string.connected);
                     break;
                 }
-                case IOMADE: {
+                case IO_MADE: {
                     textView.setText(R.string.waiting_for_attendance);
                     mConnection.getAttendance();
                     btStatus.setText(R.string.waiting_for_attendance);
@@ -94,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     break;
                 }
                 case FINISHED: {
-                    mConnection.stopThread();
+                    if(mConnection != null) {mConnection.stopThread();}
                     btButton.setEnabled(true);
                     textView.setText("");
                     btStatus.setText(R.string.click_the_icon_to_scan);
@@ -110,8 +114,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
     };
 
     //Variables
-    ArrayList<String> attendance = new ArrayList<String>();         //Taken from Attend.exe
-    ArrayList<String> signIns = new ArrayList<String>();        //Saved when a student swipes card on phone
+    ArrayList<String> attendance = new ArrayList<>();         //Taken from Attend.exe
+    ArrayList<String> signIns = new ArrayList<>();        //Saved when a student swipes card on phone
 
 
     //Cleanup on app closing
@@ -176,18 +180,18 @@ public class MainActivity extends AppCompatActivity implements Serializable
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // Check permissions for dangerous permissions
                 permissions = new String[]{
-                        Manifest.permission.BLUETOOTH_ADVERTISE,
                         Manifest.permission.BLUETOOTH_CONNECT,
                         Manifest.permission.BLUETOOTH_SCAN,
                         Manifest.permission.BLUETOOTH_ADMIN,
-                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION,           //Needed for discovery to work properly.
                         Manifest.permission.ACCESS_COARSE_LOCATION
                 };
             } else {
                 // Check permissions for dangerous permissions
                 permissions = new String[]{
                         Manifest.permission.BLUETOOTH_ADMIN,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        //Manifest.permission.ACCESS_FINE_LOCATION          //May not be needed on lower APIs
                 };
             }
             List<String> permissionsToRequest = new ArrayList<>();
@@ -217,11 +221,49 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 btLauncher.launch(intent);
             }
 
+            //If Android API 31 (Android 12)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                //If Permission is not granted
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // Create prompt on ACCESS_FINE_LOCATION denied
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    // Set the title and message for the dialog
+                    builder.setTitle("Missing Fine Location Access");
+                    builder.setMessage("The app may not properly discover devices without full permissions.");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                        }
+                    });
+                    builder.show();
+                }
+            }
+
             //Register the receiver to receive broadcasts
             IntentFilter filter = new IntentFilter();
             filter.addAction(BluetoothDevice.ACTION_FOUND);
             filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
             registerReceiver(mReceiver, filter);
+
+            //Timer to timeout discovery after 30 seconds
+            final int discoveryTimeInMs = 30000; // 30 seconds
+            new CountDownTimer(discoveryTimeInMs, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    // discovery still in progress
+                }
+                @SuppressLint("MissingPermission")
+                @Override
+                public void onFinish() {
+                    if(mBlueAdapter.isDiscovering()) {mBlueAdapter.cancelDiscovery();}
+                    //Did not find anything (not connected)
+                    if(mConnection == null) {
+                        mHandler.sendEmptyMessage(FINISHED);
+                        showToast("No devices found!");
+                    }
+                    // discovery finished, handle the result here
+                }
+            }.start();
 
             //Start discovering nearby bluetooth devices
             mBlueAdapter.startDiscovery();
@@ -316,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
     }
 
     //Button press action for settings menu
+    @SuppressLint("MissingPermission")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -325,7 +368,8 @@ public class MainActivity extends AppCompatActivity implements Serializable
         {
             case R.id.action_disconnect:
             {
-                mConnection.stopThread();
+                if(mConnection != null) {mConnection.stopThread();}
+                if(mBlueAdapter.isDiscovering()) {mBlueAdapter.cancelDiscovery();}
                 //The following could be shrunken into a helper function
                 attendance.clear();
                 signIns.clear();
@@ -368,10 +412,12 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 String permission = permissions[i];
                 int grantResult = grantResults[i];
                 btPermissions = true;
-                if (grantResult == PackageManager.PERMISSION_DENIED) {
-                    // Permission denied
-                    Log.d("PERMISSIONS", "Permission denied for: " + permission);
-                    btPermissions = false;
+                if(!permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    if (grantResult == PackageManager.PERMISSION_DENIED) {
+                        // Permission denied
+                        Log.d("PERMISSIONS", "Permission denied for: " + permission);
+                        btPermissions = false;
+                    }
                 }
             }
             if(!btPermissions) {
@@ -404,8 +450,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     mConnection = new ConnectThread(mDeviceList, myUUID, mHandler);
                     mConnection.start();
                     //Stop discovery
-                    Log.d("BT", "Discovery cancelled properly");
-                    mBlueAdapter.cancelDiscovery();
+                    if(mBlueAdapter.isDiscovering()) {mBlueAdapter.cancelDiscovery();}
                     btButton.setEnabled(true);
                     //Unregister receiver
                     unregisterReceiver(mReceiver);
