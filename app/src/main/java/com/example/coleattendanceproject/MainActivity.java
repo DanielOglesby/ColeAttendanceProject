@@ -54,9 +54,10 @@ public class MainActivity extends AppCompatActivity implements Serializable
     private ConnectThread mConnection;
     //Status codes for handler
     private static final int CONNECTED = 1;
-    private static final int ATTENDANCE = 2;
-    private static final int ERROR = 3;
-    private static final int FINISHED = 4;
+    private static final int IOMADE = 2;
+    private static final int ATTENDANCE = 3;
+    private static final int ERROR = 4;
+    private static final int FINISHED = 5;
     //Result codes for ActivityResultLauncher
     public static final int ATTEND_CODE = 1;
     public static final int SIGN_CODE = 2;
@@ -70,12 +71,17 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     // Connection successful, do something
                     Log.d("BT", "Connection successful!");
                     connectStatus.setText(R.string.connected);
+                    break;
+                }
+                case IOMADE: {
                     textView.setText(R.string.waiting_for_attendance);
                     mConnection.getAttendance();
+                    btStatus.setText(R.string.waiting_for_attendance);
                     break;
                 }
                 case ATTENDANCE: {
                     attendanceList();
+                    btStatus.setText("");
                     textView.setText(R.string.ready_to_swipe);
                     editText.setEnabled(true);
                     break;
@@ -245,22 +251,22 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 if (s.toString().contains("\n")) {
                     //Write to Attend.exe
                     Log.d("IO", "EditText: " + editText.getText().toString());
-                    String current = editText.getText().toString();
-                    Log.d("IO", "String: " + current);
+                    String current = editText.getText().toString().trim();
+                    Log.d("IO", "Attendance: " + attendance);
                     editText.setEnabled(false);     //Temporarily disable editText to prevent swipes on top of most recent swipe (NOTE: May not be necessary)
                     //If for whatever reason app is not connected, do not try to write.
                     if(mConnection != null) {
                         //Check attendance list with card swipe
                         if(attendance.contains(current)) {
                             //Check for duplicate swipes
-                            if(!signIns.contains(current)) {
+                            if(!(signIns.contains(current))) {
                                 mConnection.write(current);     //In attendance and not a duplicate. Sign-in to attend.exe
                                 signIns.add(current);           //Not a duplicate, add to list of signIns
                                 textView.setText(R.string.success);
                             }
                             else {
                                 //Duplicate sign-in
-                                textView.setText(R.string.sign_in);
+                                textView.setText(R.string.duplicate);
                             }
                         } else {
                             //Student not part of attendance sheet

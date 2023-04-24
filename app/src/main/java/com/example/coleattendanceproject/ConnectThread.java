@@ -18,8 +18,8 @@ public class ConnectThread extends Thread{
     private IOThread myThread;
     //Status codes for handler
     private static final int CONNECTED = 1;
-    private static final int FAILED = 3;
-    private static final int FINISHED = 4;
+    private static final int FAILED = 4;
+    private static final int FINISHED = 5;
     private final Handler mHandler;
     //Used to stop thread in case of no connection being made.
     private volatile boolean running = true;

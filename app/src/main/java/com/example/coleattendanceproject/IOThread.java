@@ -13,7 +13,8 @@ public class IOThread extends Thread {
     private final InputStream iStream;
     private final OutputStream oStream;
     private final StringBuilder incomingMessages = new StringBuilder();
-    private static final int ATTENDANCE = 2;
+    private static final int IOMADE = 2;
+    private static final int ATTENDANCE = 3;
     private final Handler mHandler;
     //Used to stop thread in case of no connection being made.
     private volatile boolean running = true;
@@ -42,6 +43,9 @@ public class IOThread extends Thread {
 
         //Bytes returned
         int bytes;
+
+        //IO Ready
+        mHandler.sendEmptyMessage(IOMADE);
 
         while (running) {
             try {
