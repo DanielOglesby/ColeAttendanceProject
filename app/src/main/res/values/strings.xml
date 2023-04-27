@@ -32,4 +32,6 @@
     <string name="ready_to_swipe">Ready to swipe!</string>
     <string name="number_of_students">"Number of students: %d"</string>
     <string name="number_of_sign_ins">"Number of sign-ins: %d"</string>
+    <string name="request_new_attendance_sheet">Request new Attendance Sheet</string>
+    <string name="attendance_sheet_will_be_updated_in_main">Attendance sheet will be updated in main.</string>
 </resources>
