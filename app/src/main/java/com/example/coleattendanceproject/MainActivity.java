@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
     public static final int ATTEND_CODE = 1;
     public static final int SIGN_CODE = 2;
     public static final int CLEAR_CODE = 3;
+    public static final int REQ_CODE = 4;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -346,6 +347,11 @@ public class MainActivity extends AppCompatActivity implements Serializable
                 else if (result.getResultCode() == CLEAR_CODE) {
                     attendance.clear();
                     signIns.clear();
+                }
+                else if (result.getResultCode() == REQ_CODE) {
+                    attendance.clear();
+                    editText.setEnabled(false);
+                    mHandler.sendEmptyMessage(IO_MADE);
                 }
             });
 

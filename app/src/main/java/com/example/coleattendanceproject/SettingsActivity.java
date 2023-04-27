@@ -18,9 +18,11 @@ public class SettingsActivity extends AppCompatActivity
     public static final int ATTEND_CODE = 1;
     public static final int SIGN_CODE = 2;
     public static final int CLEAR_CODE = 3;
+    public static final int REQ_CODE = 4;
     //Boolean to determine what was cleared
     public boolean attendCleared = false;
     public boolean signCleared = false;
+    public boolean attendReq = false;
     //String arraylist to be passed from MainActivity
     private ArrayList<String> attendance;
     private ArrayList<String> signIns;
@@ -31,7 +33,10 @@ public class SettingsActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         Intent resultIntent = new Intent();
-        if(attendCleared && signCleared) {
+        if (attendReq) {
+            setResult(REQ_CODE, resultIntent);
+        }
+        else if(attendCleared && signCleared) {
             setResult(CLEAR_CODE, resultIntent);
         }
         else if(attendCleared && !signCleared) {
@@ -60,6 +65,7 @@ public class SettingsActivity extends AppCompatActivity
         Button clrAttend = (Button)findViewById(R.id.clr_attend);
         Button clrSigned = (Button)findViewById(R.id.clear_signed);
         Button changeUUID = (Button)findViewById(R.id.setUUID);
+        Button reqAttend = (Button)findViewById(R.id.reqAttend);
 
         // Get the saved UUID string value from SharedPreferences
         String uuidString = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("UUID_KEY", "e0cbf06c-cd8b-4647-bb8a-263b43f0f974");
@@ -96,6 +102,13 @@ public class SettingsActivity extends AppCompatActivity
                     signNum.setText(String.format(getString(R.string.number_of_sign_ins), signIns.size()));
                 }
                 );
+        //Request new Attendance Sheet on button press
+        reqAttend.setOnClickListener(v ->
+                {
+                    attendReq = true;
+                    attendNum.setText(R.string.attendance_sheet_will_be_updated_in_main);
+                }
+        );
 
         //Change uuid on button click
         changeUUID.setOnClickListener(v -> {
