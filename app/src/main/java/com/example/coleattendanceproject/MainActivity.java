@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -19,7 +18,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
@@ -33,13 +31,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements Serializable
+public class MainActivity extends AppCompatActivity
 {
     //Variables
     private UUID myUUID;
@@ -203,8 +200,12 @@ public class MainActivity extends AppCompatActivity implements Serializable
             }
             if (!permissionsToRequest.isEmpty()) {
                 ActivityCompat.requestPermissions(MainActivity.this, permissionsToRequest.toArray(new String[0]), 2);
-            } else {
-                connectPaired();
+            }
+            if(permissionsToRequest.size() == 1 || permissionsToRequest.isEmpty()){
+                //If the missing permission is just ACCESS_FINE_LOCATION, try to pair anyways.
+                if (permissionsToRequest.contains("android.permission.ACCESS_FINE_LOCATION")) {
+                    connectPaired();
+                }
             }
         }
 
@@ -231,10 +232,7 @@ public class MainActivity extends AppCompatActivity implements Serializable
                     // Set the title and message for the dialog
                     builder.setTitle("Missing Fine Location Access");
                     builder.setMessage("The app may not properly discover devices without full permissions.");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                        }
+                    builder.setPositiveButton("OK", (dialogInterface, i) -> {
                     });
                     builder.show();
                 }
