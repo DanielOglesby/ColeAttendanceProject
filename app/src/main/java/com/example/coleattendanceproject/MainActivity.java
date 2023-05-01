@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity
             }
             if(permissionsToRequest.size() == 1 || permissionsToRequest.isEmpty()){
                 //If the missing permission is just ACCESS_FINE_LOCATION, try to pair anyways.
-                if (permissionsToRequest.contains("android.permission.ACCESS_FINE_LOCATION")) {
+                if (permissionsToRequest.contains("android.permission.ACCESS_FINE_LOCATION") || permissionsToRequest.isEmpty()) {
                     connectPaired();
                 }
             }
